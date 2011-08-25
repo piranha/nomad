@@ -1,20 +1,19 @@
 #!/usr/bin/env python
 
 import os
-from setuptools import setup
-import nomad
+from setuptools import setup, find_packages
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
     name = 'nomad',
-    description = 'simple sql migration application to not drive you mad',
-    long_description = read('README'),
+    description = 'simple sql migration tool to not drive you mad',
+    long_description = read('README.rst'),
     license = 'BSD',
-    version = nomad.__version__,
-    author = nomad.__author__,
-    author_email = nomad.__email__,
+    version = '0.1',
+    author = 'Alexander Solovyov',
+    author_email = 'alexander@solovyov.net',
     url = 'http://github.com/piranha/nomad/',
     classifiers = [
         'Environment :: Console',
@@ -25,7 +24,9 @@ setup(
         'Topic :: Software Development',
         'Topic :: Database'
         ],
-    py_modules = ['nomad'],
+
+    install_requires = ['opster'],
+    packages = find_packages(),
     entry_points = {'console_scripts': ['nomad=nomad:main']},
     platforms='any',
     )
