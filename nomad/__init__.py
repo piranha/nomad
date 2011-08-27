@@ -1,41 +1,17 @@
 #!/usr/bin/env python
 
-import os.path as op
+import os, os.path as op
 import sys
 
-from opster import command, dispatch
+from opster import Dispatcher
 from termcolor import cprint
 
 from nomad.repo import Repository
+from nomad.utils import abort
 
-
-@command()
-def init(repo=None, **opts):
-    '''Initialize database migration management
-    '''
-    repo.init_db()
-    print 'Versioning table initialized successfully'
-
-@command()
-def list(repo=None,
-         all=('a', False, 'show all migrations (default: only non-applied)'),
-         **opts):
-    '''List migrations
-    '''
-    for m in repo.available:
-        if all and m in repo.applied:
-            cprint(m, 'grey')
-        else:
-            cprint(m, 'green')
-
-@command()
-def create(name, repo=None, **opts):
-    '''Create new migration
-    '''
-    pass
 
 GLOBAL = [
-    ('c', 'config', '', 'path to config file (default: $REPO/nomad.ini)'),
+    ('c', 'config', '', 'path to config file (default: $CWD/nomad.ini)'),
     ('D', 'define', {}, 'override config values'),
     ]
 
@@ -43,14 +19,8 @@ def getconfig(func):
     if func.__name__.startswith('help'):
         return func
     def inner(*args, **kwargs):
-        if args:
-            repopath = args[-1]
-            args = args[:-1]
-        else:
-            repopath = ''
-
         if not kwargs.get('config'):
-            kwargs['config'] = op.join(repopath, 'nomad.ini')
+            kwargs['config'] = 'nomad.ini'
 
         try:
             repo = Repository(kwargs['config'], kwargs['define'])
@@ -58,12 +28,75 @@ def getconfig(func):
             print 'Error:', e
             sys.exit(1)
 
-        kwargs['repo'] = repo
-        return func(*args, **kwargs)
+        return func(repo=repo, *args, **kwargs)
     return inner
 
-def main():
-    dispatch(globaloptions=GLOBAL, middleware=getconfig)
+
+app = Dispatcher(globaloptions=GLOBAL, middleware=getconfig)
+
+
+@app.command()
+def init(**opts):
+    '''Initialize database migration management
+    '''
+    opts['repo'].init_db()
+    print 'Versioning table initialized successfully'
+
+
+@app.command(aliases=('ls',))
+def list(all=('a', False, 'show all migrations (default: only non-applied)'),
+         **opts):
+    '''List migrations
+    '''
+    repo = opts['repo']
+    for m in repo.available:
+        if m in repo.applied:
+            if all:
+                cprint(m, 'magenta')
+        else:
+            cprint(m, 'green')
+
+
+@app.command()
+def create(name, **opts):
+    '''Create new migration
+    '''
+    path = op.join(opts['repo'].path, name)
+    try:
+        os.mkdir(path)
+    except OSError, e:
+        if e.errno == 17:
+            abort('directory %s already exists' % path)
+        raise
+    with file(op.join(path, 'up.sql'), 'w') as up:
+        up.write('-- SQL ALTER statements for database upgrade\n')
+    with file(op.join(path, 'down.sql'), 'w') as down:
+        down.write('-- SQL ALTER statements for database downgrade\n')
+
+
+@app.command()
+def up(all=('a', False, 'apply all available migrations'),
+       *names,
+       **opts):
+    '''Apply upgrade migrations
+    '''
+    repo = opts['repo']
+    if not names and all:
+        names = [x for x in repo.available if x not in repo.applied]
+    if not names:
+        abort('Supply names of migrations to upgrade')
+    map(repo.up, names)
+
+
+@app.command()
+def down(*names, **opts):
+    '''Apply downgrade migrations
+    '''
+    repo = opts['repo']
+    if not names:
+        abort('Supply name to downgrade')
+    map(repo.down, names)
+
 
 if __name__ == '__main__':
-    main()
+    app.dispatch()

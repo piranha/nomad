@@ -1,3 +1,8 @@
+import sys
+
+from termcolor import cprint
+
+
 def cachedproperty(f):
     """Returns a cached property that is calculated by function f
     """
@@ -12,3 +17,8 @@ def cachedproperty(f):
         return x
 
     return property(get)
+
+
+def abort(msg, code=1):
+    cprint('Error: %s' % msg, 'red')
+    sys.exit(code)

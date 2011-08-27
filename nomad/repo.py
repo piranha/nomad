@@ -1,4 +1,5 @@
 import os, os.path as op
+from datetime import datetime
 from ConfigParser import ConfigParser, NoOptionError
 
 from nomad.utils import cachedproperty
@@ -65,5 +66,43 @@ class Repository(object):
 
     @cachedproperty
     def applied(self):
-        return self.engine.query('SELECT name FROM %s ORDER BY date' %
-                                 self.get('nomad.table'))
+        return [x for x, in
+                self.engine.query('SELECT name FROM %s ORDER BY date' %
+                                  self.get('nomad.table'))]
+
+    def up(self, name):
+        m = Migration(self, name)
+        m.up()
+
+    def down(self, name):
+        m = Migration(self, name)
+        m.down()
+
+
+class Migration(object):
+    def __init__(self, repo, name):
+        self.repo = repo
+        self.name = name
+
+    def __repr__(self):
+        return '<%s: %s>' % (type(self).__name__, self.name)
+
+    @property
+    def path(self):
+        return op.join(self.repo.path, self.name)
+
+    def up(self):
+        print 'applying upgrade %s' % self
+        with file(op.join(self.path, 'up.sql')) as f:
+            self.repo.engine.query(f.read())
+        self.repo.engine.query('INSERT INTO %s (name, date) VALUES (?, ?)'
+                               % self.repo.get('nomad.table'),
+                               self.name, datetime.now())
+
+    def down(self):
+        print 'applying downgrade %s' % self
+        with file(op.join(self.path, 'down.sql')) as f:
+            self.repo.engine.query(f.read())
+        self.repo.engine.query('DELETE FROM %s WHERE name = ?'
+                               % self.repo.get('nomad.table'),
+                               self.name)
