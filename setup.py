@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name = 'nomad',
-    description = 'simple sql migration tool to not drive you mad',
+    description = 'simple sql migration tool to save you from becoming mad',
     long_description = read('README.rst'),
     license = 'BSD',
     version = '0.1',
@@ -22,6 +22,7 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Topic :: Software Development',
+        'Topic :: Software Development :: Version Control',
         'Topic :: Database'
         ],
 
