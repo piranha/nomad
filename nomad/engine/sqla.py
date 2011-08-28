@@ -1,14 +1,17 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, exc
 
-from nomad.engine import BaseEngine
+from nomad.engine import BaseEngine, DBError
 
 
 class SAEngine(BaseEngine):
     def connect(self):
         self._connection = create_engine(self.url)
 
-    def query(self, statement, *args, **kwargs):
-        return self.connection.execute(statement, *args, **kwargs)
+    def query(self, *args, **kwargs):
+        try:
+            return self.connection.execute(*args, **kwargs)
+        except exc.SQLAlchemyError, e:
+            raise DBError(str(e))
 
 
 engine = SAEngine

@@ -2,8 +2,25 @@ import os, os.path as op
 from datetime import datetime
 from ConfigParser import ConfigParser, NoOptionError
 from subprocess import call
+from functools import wraps
 
 from nomad.utils import cachedproperty, geturl
+
+
+def tx(getrepo):
+    def decorator(f):
+        @wraps(f)
+        def inner(self, *args, **kwargs):
+            repo = getrepo(self)
+            try:
+                repo.engine.begin()
+                f(self, *args, **kwargs)
+                repo.engine.commit()
+            except:
+                repo.engine.rollback()
+                raise
+        return inner
+    return decorator
 
 
 class Repository(object):
@@ -53,11 +70,9 @@ class Repository(object):
 
     # actual work done here
 
+    @tx(lambda self: self)
     def init_db(self):
-        return self.engine.query('''CREATE TABLE %s (
-            name varchar(255) NOT NULL,
-            date datetime NOT NULL
-        )''' % self['nomad.table'])
+        self.engine.init(self['nomad.table'])
 
     @cachedproperty
     def available(self):
@@ -108,12 +123,14 @@ class Migration(object):
                     call(path)
                     print '  script migration applied: %s' % fn
 
+    @tx(lambda self: self.repo)
     def up(self):
         self.execute('up')
         self.repo.engine.query('INSERT INTO %s (name, date) VALUES (?, ?)'
                                % self.repo['nomad.table'],
                                self.name, datetime.now())
 
+    @tx(lambda self: self.repo)
     def down(self):
         self.execute('down')
         self.repo.engine.query('DELETE FROM %s WHERE name = ?'

@@ -7,6 +7,7 @@ from opster import Dispatcher
 from termcolor import cprint
 
 from nomad.repo import Repository
+from nomad.engine import DBError
 from nomad.utils import abort
 
 
@@ -82,6 +83,9 @@ def up(all=('a', False, 'apply all available migrations'),
         names = [x for x in repo.available if x not in repo.applied]
     if not names:
         abort('Supply names of migrations to upgrade')
+    for name in names:
+        if name in repo.applied:
+            abort('migration %s is already applied' % name)
     map(repo.up, names)
 
 
@@ -92,6 +96,9 @@ def down(*names, **opts):
     repo = opts['repo']
     if not names:
         abort('Supply name to downgrade')
+    for name in names:
+        if name not in repo.applied:
+            abort('migration %s is not yet applied' % name)
     map(repo.down, names)
 
 
@@ -103,7 +110,7 @@ def info(**opts):
     try:
         print '  %s applied' % len(repo.applied)
         print '  %s unapplied' % (len(repo.available) - len(repo.applied))
-    except:
+    except DBError:
         print '  Uninitialized repository'
 
 if __name__ == '__main__':
