@@ -4,6 +4,9 @@ class BaseEngine(object):
     def __init__(self, url):
         self.url = url
 
+    def __repr__(self):
+        return '<%s: %s>' % (type(self).__name__, self.url)
+
     @property
     def connection(self):
         if not self._connection:

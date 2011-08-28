@@ -2,9 +2,6 @@ First, set up environment::
 
   $ cat > nomad.ini <<EOF
   > [nomad]
-  > env = test
-  > 
-  > [test]
   > engine = sqla
   > url = sqlite:///test.db
   > EOF

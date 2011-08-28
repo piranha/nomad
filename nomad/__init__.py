@@ -95,5 +95,16 @@ def down(*names, **opts):
     map(repo.down, names)
 
 
+@app.command()
+def info(**opts):
+    repo = opts['repo']
+    print '%s:' % repo
+    print '  %s' % repo.engine
+    try:
+        print '  %s applied' % len(repo.applied)
+        print '  %s unapplied' % (len(repo.available) - len(repo.applied))
+    except:
+        print '  Uninitialized repository'
+
 if __name__ == '__main__':
     app.dispatch()

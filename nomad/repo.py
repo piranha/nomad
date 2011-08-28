@@ -3,20 +3,19 @@ from datetime import datetime
 from ConfigParser import ConfigParser, NoOptionError
 from subprocess import call
 
-from nomad.utils import cachedproperty
-
-
-raiseexception = object()
+from nomad.utils import cachedproperty, geturl
 
 
 class Repository(object):
     DEFAULTS = {
         'nomad.table': 'nomad',
-        'nomad.env': 'default',
         }
 
     def __init__(self, confpath, overrides=None):
-        self.conf = ConfigParser()
+        self.conf = ConfigParser(defaults={
+                'CONFPATH': op.abspath(confpath),
+                'CONFDIR': op.dirname(op.abspath(confpath)),
+                })
         if not self.conf.read(confpath):
             raise IOError('configuration file %r not found' % confpath)
 
@@ -26,30 +25,31 @@ class Repository(object):
 
         self.path = self.get('nomad.path', op.dirname(confpath) or '.')
 
-        enginepath = self.fromenv('engine')
+        enginepath = self['nomad.engine']
         if not '.' in enginepath:
             enginepath = 'nomad.engine.' + enginepath
         enginemod = __import__(enginepath, {}, {}, [''])
-        self.engine = getattr(enginemod, 'engine')(self.fromenv('url'))
+        self.engine = getattr(enginemod, 'engine')(geturl(self))
 
     def __repr__(self):
         return '<%s: %s>' % (type(self).__name__, self.path)
 
-    def get(self, path, default=raiseexception):
+    def __getitem__(self, path):
         try:
             return self.conf.get(*path.split('.'))
         except NoOptionError:
-            # NOTE: maybe if default is supplied, it should override
-            # self.DEFAULTS? Not sure, probably not
             if path in self.DEFAULTS:
                 return self.DEFAULTS[path]
+            raise KeyError(path)
 
-            if default is raiseexception:
-                raise
+    def __contains__(self, path):
+        return self.conf.has_option(*path.split('.'))
+
+    def get(self, path, default=None):
+        try:
+            return self[path]
+        except KeyError:
             return default
-
-    def fromenv(self, key):
-        return self.conf.get(self.get('nomad.env'), key)
 
     # actual work done here
 
@@ -57,7 +57,7 @@ class Repository(object):
         return self.engine.query('''CREATE TABLE %s (
             name varchar(255) NOT NULL,
             date datetime NOT NULL
-        )''' % self.get('nomad.table'))
+        )''' % self['nomad.table'])
 
     @cachedproperty
     def available(self):
@@ -69,7 +69,7 @@ class Repository(object):
     def applied(self):
         return [x for x, in
                 self.engine.query('SELECT name FROM %s ORDER BY date' %
-                                  self.get('nomad.table'))]
+                                  self['nomad.table'])]
 
     def up(self, name):
         m = Migration(self, name)
@@ -111,11 +111,11 @@ class Migration(object):
     def up(self):
         self.execute('up')
         self.repo.engine.query('INSERT INTO %s (name, date) VALUES (?, ?)'
-                               % self.repo.get('nomad.table'),
+                               % self.repo['nomad.table'],
                                self.name, datetime.now())
 
     def down(self):
         self.execute('down')
         self.repo.engine.query('DELETE FROM %s WHERE name = ?'
-                               % self.repo.get('nomad.table'),
+                               % self.repo['nomad.table'],
                                self.name)
