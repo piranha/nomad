@@ -13,6 +13,7 @@ open:
 	cd docs && make open
 
 test:
+	python nomad/utils.py
 	cram tests/*.t
 
 itest:

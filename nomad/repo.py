@@ -1,6 +1,7 @@
 import os, os.path as op
 from datetime import datetime
 from ConfigParser import ConfigParser, NoOptionError
+from subprocess import call
 
 from nomad.utils import cachedproperty
 
@@ -85,24 +86,36 @@ class Migration(object):
         self.name = name
 
     def __repr__(self):
-        return '<%s: %s>' % (type(self).__name__, self.name)
+        return '<%s: %s>' % (type(self).__name__, str(self))
+
+    def __str__(self):
+        return self.name
 
     @property
     def path(self):
         return op.join(self.repo.path, self.name)
 
+    def execute(self, direction):
+        print 'applying %sgrade %s:' % (direction, self)
+        for fn in os.listdir(self.path):
+            if fn.startswith(direction):
+                path = op.join(self.path, fn)
+                if fn.endswith('.sql'):
+                    with file(path) as f:
+                        self.repo.engine.query(f.read())
+                    print '  sql migration applied: %s' % fn
+                elif os.access(path, os.X_OK):
+                    call(path)
+                    print '  script migration applied: %s' % fn
+
     def up(self):
-        print 'applying upgrade %s' % self
-        with file(op.join(self.path, 'up.sql')) as f:
-            self.repo.engine.query(f.read())
+        self.execute('up')
         self.repo.engine.query('INSERT INTO %s (name, date) VALUES (?, ?)'
                                % self.repo.get('nomad.table'),
                                self.name, datetime.now())
 
     def down(self):
-        print 'applying downgrade %s' % self
-        with file(op.join(self.path, 'down.sql')) as f:
-            self.repo.engine.query(f.read())
+        self.execute('down')
         self.repo.engine.query('DELETE FROM %s WHERE name = ?'
                                % self.repo.get('nomad.table'),
                                self.name)

@@ -21,15 +21,21 @@ this migration.
 So directory structure looks like this::
 
   migrations/
-    2011-11-11-my-beloved-migration/
+    2011-11-11-first-migration/
       down.sql
-      post-down.py
-      pre-up.py
       up.sql
+    2011-11-12-second-migration/
+      down-0.py
+      down-1.sql
+      up.sql
+      up-1.py
 
 Those are main properties:
 
-- extension is not important, except when it's ``.sql``. SQL scripts will be
+- Extension is not important, except when it's ``.sql``. SQL scripts will be
   executed in context of your database, all other scripts will be executed just
-  by starting them (shebang ``#!`` is your friend).
-- you can have ``pre-`` and ``post-`` scripts.
+  by starting them (shebang ``#!`` is your friend, and keep it executable).
+- Name matters - it should start with ``up`` and ``down`` respectively for
+  upgrade and downgrade, and everything is executed in order. Order is
+  determined by using human sort (so that ``up-1.sql`` is earlier than
+  ``up-10.sql``, you can always check sorting with ``ls --sort=version``).

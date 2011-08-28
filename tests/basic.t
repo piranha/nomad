@@ -30,7 +30,8 @@ First migration::
 Upgrading::
 
   $ nomad up -a
-  applying upgrade <Migration: 0-init>
+  applying upgrade 0-init:
+    sql migration applied: up.sql
   $ sqlite3 test.db '.schema test'
   CREATE TABLE test (value varchar(10));
   $ sqlite3 test.db 'select name from nomad'
@@ -41,7 +42,8 @@ Downgrading::
   $ nomad ls -a
   \x1b[35m0-init\x1b[0m (esc)
   $ nomad down 0-init
-  applying downgrade <Migration: 0-init>
+  applying downgrade 0-init:
+    sql migration applied: down.sql
   $ sqlite3 test.db '.schema test'
   $ nomad ls
   \x1b[32m0-init\x1b[0m (esc)

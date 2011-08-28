@@ -11,7 +11,7 @@ from nomad.utils import abort
 
 
 GLOBAL = [
-    ('c', 'config', '', 'path to config file (default: $CWD/nomad.ini)'),
+    ('c', 'config', 'nomad.ini', 'path to config file'),
     ('D', 'define', {}, 'override config values'),
     ]
 
@@ -19,9 +19,6 @@ def getconfig(func):
     if func.__name__.startswith('help'):
         return func
     def inner(*args, **kwargs):
-        if not kwargs.get('config'):
-            kwargs['config'] = 'nomad.ini'
-
         try:
             repo = Repository(kwargs['config'], kwargs['define'])
         except IOError, e:
