@@ -13,5 +13,7 @@ class SAEngine(BaseEngine):
         except exc.SQLAlchemyError, e:
             raise DBError(str(e))
 
+    begin = rollback = commit = lambda self: None
+
 
 engine = SAEngine

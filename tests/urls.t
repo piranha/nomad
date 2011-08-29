@@ -33,7 +33,7 @@ URL from Python object from ``sys.path``::
 
 URL from Python object using path::
 
-  $ sed -i '' -e 's/somemod/%(CONFDIR)s\/somemod.py/' nomad.ini
+  $ sed -i '' -e 's/somemod/${confdir}\/somemod.py/' nomad.ini
   $ nomad info
   <Repository: .>:
     <SAEngine: sqlite:///test-py.db>

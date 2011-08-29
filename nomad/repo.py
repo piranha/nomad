@@ -1,6 +1,6 @@
 import os, os.path as op
 from datetime import datetime
-from ConfigParser import ConfigParser, NoOptionError
+from configparser import ConfigParser, ExtendedInterpolation
 from subprocess import call
 from functools import wraps
 
@@ -25,24 +25,27 @@ def tx(getrepo):
 
 class Repository(object):
     DEFAULTS = {
-        'nomad.table': 'nomad',
+        'nomad': {'table': 'nomad'},
         }
 
     def __init__(self, confpath, overrides=None):
-        self.conf = ConfigParser(defaults={
-                'CONFPATH': op.abspath(confpath),
-                'CONFDIR': op.dirname(op.abspath(confpath)),
+        self.conf = ConfigParser(interpolation=ExtendedInterpolation(),
+                                 defaults={
+                'confpath': op.abspath(confpath),
+                'confdir': op.dirname(op.abspath(confpath)),
                 })
-        if not self.conf.read(confpath):
+        self.conf.read_dict(self.DEFAULTS)
+        if not self.conf.read([confpath]):
             raise IOError('configuration file %r not found' % confpath)
 
         for k, v in (overrides or {}).iteritems():
             section, key = k.split('.')
             self.conf.set(section, key, v)
 
-        self.path = self.get('nomad.path', op.dirname(confpath) or '.')
+        self.path = self.conf.get('nomad', 'path',
+                                  fallback=op.dirname(confpath) or '.')
 
-        enginepath = self['nomad.engine']
+        enginepath = self.conf['nomad']['engine']
         if not '.' in enginepath:
             enginepath = 'nomad.engine.' + enginepath
         enginemod = __import__(enginepath, {}, {}, [''])
@@ -51,60 +54,49 @@ class Repository(object):
     def __repr__(self):
         return '<%s: %s>' % (type(self).__name__, self.path)
 
-    def __getitem__(self, path):
-        try:
-            return self.conf.get(*path.split('.'))
-        except NoOptionError:
-            if path in self.DEFAULTS:
-                return self.DEFAULTS[path]
-            raise KeyError(path)
-
-    def __contains__(self, path):
-        return self.conf.has_option(*path.split('.'))
-
-    def get(self, path, default=None):
-        try:
-            return self[path]
-        except KeyError:
-            return default
+    def get(self, name):
+        return Migration(self, name)
 
     # actual work done here
-
     @tx(lambda self: self)
     def init_db(self):
-        self.engine.init(self['nomad.table'])
+        self.engine.init(self.conf['nomad']['table'])
 
     @cachedproperty
     def available(self):
-        migrations = [x for x in os.listdir(self.path) if
+        migrations = [self.get(x) for x in os.listdir(self.path) if
                       op.isdir(op.join(self.path, x))]
         return list(sorted(migrations))
 
     @cachedproperty
     def applied(self):
-        return [x for x, in
+        return [self.get(x) for (x, ) in
                 self.engine.query('SELECT name FROM %s ORDER BY date' %
-                                  self['nomad.table'])]
-
-    def up(self, name):
-        m = Migration(self, name)
-        m.up()
-
-    def down(self, name):
-        m = Migration(self, name)
-        m.down()
+                                  self.conf['nomad']['table'])]
 
 
 class Migration(object):
     def __init__(self, repo, name):
         self.repo = repo
         self.name = name
+        self.conf = ConfigParser(interpolation=ExtendedInterpolation())
+        self.conf.read(op.join(repo.path, name, 'migration.ini'))
+        self.dependecies = self.conf.get('nomad', 'dependecies', fallback=[])
 
     def __repr__(self):
         return '<%s: %s>' % (type(self).__name__, str(self))
 
     def __str__(self):
         return self.name
+
+    def __cmp__(self, other):
+        if isinstance(other, Migration) and self.repo == other.repo:
+            if self.name == other.name:
+                return 0
+            if self.name < other.name:
+                return -1
+            return 1
+        return id(self) - id(other)
 
     @property
     def path(self):
@@ -127,12 +119,12 @@ class Migration(object):
     def up(self):
         self.execute('up')
         self.repo.engine.query('INSERT INTO %s (name, date) VALUES (?, ?)'
-                               % self.repo['nomad.table'],
+                               % self.repo.conf['nomad']['table'],
                                self.name, datetime.now())
 
     @tx(lambda self: self.repo)
     def down(self):
         self.execute('down')
         self.repo.engine.query('DELETE FROM %s WHERE name = ?'
-                               % self.repo['nomad.table'],
+                               % self.repo.conf['nomad']['table'],
                                self.name)

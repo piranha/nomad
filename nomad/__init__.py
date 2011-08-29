@@ -79,14 +79,18 @@ def up(all=('a', False, 'apply all available migrations'),
     '''Apply upgrade migrations
     '''
     repo = opts['repo']
-    if not names and all:
-        names = [x for x in repo.available if x not in repo.applied]
-    if not names:
+    if names:
+        migrations = map(repo.get, names)
+    elif all:
+        migrations = [x for x in repo.available if x not in repo.applied]
+    else:
         abort('Supply names of migrations to upgrade')
-    for name in names:
-        if name in repo.applied:
-            abort('migration %s is already applied' % name)
-    map(repo.up, names)
+
+    for m in migrations:
+        if m in repo.applied:
+            abort('migration %s is already applied' % m)
+    for m in migrations:
+        m.up()
 
 
 @app.command()
@@ -96,10 +100,12 @@ def down(*names, **opts):
     repo = opts['repo']
     if not names:
         abort('Supply name to downgrade')
-    for name in names:
-        if name not in repo.applied:
-            abort('migration %s is not yet applied' % name)
-    map(repo.down, names)
+    migrations = map(repo.get, names)
+    for m in migrations:
+        if m not in repo.applied:
+            abort('migration %s is not yet applied' % m)
+    for m in migrations:
+        m.down()
 
 
 @app.command()

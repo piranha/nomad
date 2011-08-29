@@ -26,7 +26,7 @@ setup(
         'Topic :: Database'
         ],
 
-    install_requires = ['opster>=3.0'],
+    install_requires = ['opster>=3.2.1', 'configparser'],
     packages = find_packages(),
     entry_points = {'console_scripts': ['nomad=nomad:app.dispatch']},
     platforms='any',

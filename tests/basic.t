@@ -1,3 +1,5 @@
+.. -*- mode: rst -*-
+
 First, set up environment::
 
   $ cat > nomad.ini <<EOF

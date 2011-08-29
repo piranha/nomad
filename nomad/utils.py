@@ -66,10 +66,11 @@ def loadpath(path):
 
 
 def geturl(repo):
-    if 'nomad.url' in repo:
-        return repo['nomad.url']
-    if 'nomad.url-python' in repo:
-        pypath, attr = repo['nomad.url-python'].split(':')
+    conf = repo.conf['nomad']
+    if 'url' in conf:
+        return conf['url']
+    if 'url-python' in conf:
+        pypath, attr = conf['url-python'].encode('utf-8').split(':')
         if '/' in pypath or pypath.endswith('.py'):
             # load from file
             mod = loadpath(pypath)
@@ -77,14 +78,15 @@ def geturl(repo):
             # load from sys.path
             mod = __import__(pypath, {}, {}, [''])
         return reduce(lambda x, y: getattr(x, y), attr.split('.'), mod)
-    if 'nomad.url-file' in repo:
+    if 'url-file' in conf:
         try:
-            return file(repo['nomad.url-file']).read().strip()
+            return file(conf['url-file']).read().strip()
         except IOError, e:
             abort(e)
-    if 'nomad.url-command' in repo:
+    if 'url-command' in conf:
         try:
-            p1 = Popen(shlex.split(repo['nomad.url-command']), stdout=PIPE)
+            p1 = Popen(shlex.split(conf['url-command'].encode('utf-8')),
+                       stdout=PIPE)
         except OSError, e:
             abort(e)
         return p1.communicate()[0].strip()

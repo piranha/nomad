@@ -30,7 +30,8 @@ def pgfetch(c):
 CONNECTORS = {
     'sqlite': [{'mod': 'sqlite3',
                 'exc': lambda mod: mod.Error,
-                'connect': lambda m, p: m.connect(p.path.lstrip('/')),
+                # [1:] strips first leading slash here
+                'connect': lambda m, p: m.connect(p.path[1:]),
                 'begin': lambda c: None,
                 'commit': lambda c: c.commit(),
                 'rollback': lambda c: c.rollback()}],
