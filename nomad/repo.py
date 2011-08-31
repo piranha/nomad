@@ -76,6 +76,13 @@ class Repository(object):
 
 
 class Migration(object):
+    SINGLETONS = {}
+
+    def __new__(cls, repo, name):
+        if (repo, name) not in cls.SINGLETONS:
+            cls.SINGLETONS[(repo, name)] = object.__new__(cls, repo, name)
+        return cls.SINGLETONS[(repo, name)]
+
     def __init__(self, repo, name):
         self.repo = repo
         self.name = name
