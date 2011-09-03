@@ -4,7 +4,7 @@ from configparser import ConfigParser, ExtendedInterpolation
 from subprocess import call
 from functools import wraps
 
-from nomad.utils import cachedproperty, geturl
+from nomad.utils import cachedproperty, geturl, NomadError
 
 
 def tx(getrepo):
@@ -57,7 +57,7 @@ class Repository(object):
     def get(self, name):
         return Migration(self, name)
 
-    # actual work done here
+    # actual work is done here
     @tx(lambda self: self)
     def init_db(self):
         self.engine.init(self.conf['nomad']['table'])
@@ -78,14 +78,17 @@ class Repository(object):
 class Migration(object):
     SINGLETONS = {}
 
-    def __new__(cls, repo, name):
+    def __new__(cls, repo, name, force=False):
         if (repo, name) not in cls.SINGLETONS:
-            cls.SINGLETONS[(repo, name)] = object.__new__(cls, repo, name)
+            cls.SINGLETONS[(repo, name)] = object.__new__(
+                cls, repo, name, force)
         return cls.SINGLETONS[(repo, name)]
 
-    def __init__(self, repo, name):
+    def __init__(self, repo, name, force=False):
         self.repo = repo
         self.name = name
+        if not op.exists(op.join(repo.path, name)) and not force:
+            raise NomadError('migration not found')
         self.conf = ConfigParser(interpolation=ExtendedInterpolation())
         self.conf.read(op.join(repo.path, name, 'migration.ini'))
         self.dependecies = self.conf.get('nomad', 'dependecies', fallback=[])
@@ -109,29 +112,24 @@ class Migration(object):
     def path(self):
         return op.join(self.repo.path, self.name)
 
-    def execute(self, direction):
-        print 'applying %sgrade %s:' % (direction, self)
-        for fn in os.listdir(self.path):
-            if fn.startswith(direction):
-                path = op.join(self.path, fn)
-                if fn.endswith('.sql'):
-                    with file(path) as f:
-                        self.repo.engine.query(f.read())
-                    print '  sql migration applied: %s' % fn
-                elif os.access(path, os.X_OK):
-                    call(path)
-                    print '  script migration applied: %s' % fn
-
     @tx(lambda self: self.repo)
-    def up(self):
-        self.execute('up')
+    def apply(self):
+        print 'applying migration %s:' % self
+
+        for fn in os.listdir(self.path):
+            if fn == 'migration.ini':
+                continue
+            path = op.join(self.path, fn)
+            if fn.endswith('.sql'):
+                with file(path) as f:
+                    self.repo.engine.query(f.read())
+                print '  sql migration applied: %s' % fn
+            elif os.access(path, os.X_OK):
+                call(path)
+                print '  script migration applied: %s' % fn
+            else:
+                print '  skipping file: %s' % fn
+
         self.repo.engine.query('INSERT INTO %s (name, date) VALUES (?, ?)'
                                % self.repo.conf['nomad']['table'],
                                self.name, datetime.now())
-
-    @tx(lambda self: self.repo)
-    def down(self):
-        self.execute('down')
-        self.repo.engine.query('DELETE FROM %s WHERE name = ?'
-                               % self.repo.conf['nomad']['table'],
-                               self.name)

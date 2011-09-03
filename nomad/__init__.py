@@ -8,7 +8,7 @@ from termcolor import cprint
 
 from nomad.repo import Repository
 from nomad.engine import DBError
-from nomad.utils import abort
+from nomad.utils import abort, NomadError
 
 
 GLOBAL = [
@@ -28,7 +28,6 @@ def getconfig(func):
 
         return func(repo=repo, *args, **kwargs)
     return inner
-
 
 app = Dispatcher(globaloptions=GLOBAL, middleware=getconfig)
 
@@ -56,27 +55,38 @@ def list(all=('a', False, 'show all migrations (default: only non-applied)'),
 
 
 @app.command()
-def create(name, **opts):
+def create(name,
+           dependecies=('d', [], 'migration dependecies'),
+           **opts):
     '''Create new migration
     '''
-    path = op.join(opts['repo'].path, name)
+    repo = opts['repo']
+    try:
+        deps = map(repo.get, dependecies)
+    except NomadError, e:
+        print 'Error:', e
+        sys.exit(1)
+
+    path = op.join(repo.path, name)
     try:
         os.mkdir(path)
     except OSError, e:
         if e.errno == 17:
             abort('directory %s already exists' % path)
         raise
-    with file(op.join(path, 'up.sql'), 'w') as up:
-        up.write('-- SQL ALTER statements for database upgrade\n')
-    with file(op.join(path, 'down.sql'), 'w') as down:
-        down.write('-- SQL ALTER statements for database downgrade\n')
+
+    with file(op.join(path, 'migration.ini'), 'w') as f:
+        f.write('[nomad]\n')
+        f.write('dependecies = %s\n' % ', '.join(d.name for d in deps))
+    with file(op.join(path, 'up.sql'), 'w') as f:
+        f.write('-- SQL ALTER statements for database migration\n')
 
 
 @app.command()
-def up(all=('a', False, 'apply all available migrations'),
+def apply(all=('a', False, 'apply all available migrations'),
        *names,
        **opts):
-    '''Apply upgrade migrations
+    '''Apply migrations
     '''
     repo = opts['repo']
     if names:
@@ -84,28 +94,13 @@ def up(all=('a', False, 'apply all available migrations'),
     elif all:
         migrations = [x for x in repo.available if x not in repo.applied]
     else:
-        abort('Supply names of migrations to upgrade')
+        abort('Supply names of migrations to apply')
 
     for m in migrations:
         if m in repo.applied:
             abort('migration %s is already applied' % m)
     for m in migrations:
-        m.up()
-
-
-@app.command()
-def down(*names, **opts):
-    '''Apply downgrade migrations
-    '''
-    repo = opts['repo']
-    if not names:
-        abort('Supply name to downgrade')
-    migrations = map(repo.get, names)
-    for m in migrations:
-        if m not in repo.applied:
-            abort('migration %s is not yet applied' % m)
-    for m in migrations:
-        m.down()
+        m.apply()
 
 
 @app.command()
@@ -118,6 +113,7 @@ def info(**opts):
         print '  %s unapplied' % (len(repo.available) - len(repo.applied))
     except DBError:
         print '  Uninitialized repository'
+
 
 if __name__ == '__main__':
     app.dispatch()
