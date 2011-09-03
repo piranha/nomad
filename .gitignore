@@ -1,2 +1,4 @@
 *.pyc
 /nomad.egg-info/
+/dist/
+/docs/_build/

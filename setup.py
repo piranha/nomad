@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
-setup(
+config = dict(
     name = 'nomad',
     description = 'simple sql migration tool to save you from becoming mad',
     long_description = read('README.rst'),
@@ -31,3 +31,6 @@ setup(
     entry_points = {'console_scripts': ['nomad=nomad:app.dispatch']},
     platforms='any',
     )
+
+if __name__ == '__main__':
+    setup(**config)
