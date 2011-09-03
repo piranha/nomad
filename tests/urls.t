@@ -24,7 +24,11 @@ Setup for Python object tests::
 
 URL from Python object from ``sys.path``::
 
-  $ sed -i '' -e 's/url.*/url-python = somemod:dburl/' nomad.ini
+  $ cat > nomad.ini <<EOF
+  > [nomad]
+  > engine = sqla
+  > url-python = somemod:dburl
+  > EOF
   $ PYTHONPATH=. nomad info
   <Repository: .>:
     <SAEngine: sqlite:///test-py.db>
@@ -33,7 +37,11 @@ URL from Python object from ``sys.path``::
 
 URL from Python object using path::
 
-  $ sed -i '' -e 's/somemod/${confdir}\/somemod.py/' nomad.ini
+  $ cat > nomad.ini <<EOF
+  > [nomad]
+  > engine = sqla
+  > url-python = \${confdir}/somemod.py:dburl
+  > EOF
   $ nomad info
   <Repository: .>:
     <SAEngine: sqlite:///test-py.db>
@@ -44,7 +52,11 @@ URL from Python package::
 
   $ mkdir package
   $ mv somemod.py package/__init__.py
-  $ sed -i '' -e 's/somemod.py/package\//' nomad.ini
+  $ cat > nomad.ini <<EOF
+  > [nomad]
+  > engine = sqla
+  > url-python = \${confdir}/package:dburl
+  > EOF
   $ nomad info
   <Repository: .>:
     <SAEngine: sqlite:///test-py.db>
@@ -54,7 +66,11 @@ URL from Python package::
 URL from a file::
 
   $ echo 'sqlite:///test-file.db' > url
-  $ sed -i '' -e 's/url.*/url-file = url/' nomad.ini
+  $ cat > nomad.ini <<EOF
+  > [nomad]
+  > engine = sqla
+  > url-file = url
+  > EOF
   $ nomad info
   <Repository: .>:
     <SAEngine: sqlite:///test-file.db>
@@ -63,7 +79,12 @@ URL from a file::
 
 URL from a command::
 
-  $ sed -i '' -e 's/url.*/url-command = cat url/' nomad.ini
+  $ echo 'sqlite:///test-file.db' > url
+  $ cat > nomad.ini <<EOF
+  > [nomad]
+  > engine = sqla
+  > url-command = cat url
+  > EOF
   $ nomad info
   <Repository: .>:
     <SAEngine: sqlite:///test-file.db>
