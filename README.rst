@@ -15,28 +15,32 @@ migrate and can run pre- and post-processing routines written in any language
 Concept
 -------
 
-Nomad's migration store is a directory. Every directory in it represents a
-single migration, with name of this directory used as an actual identificator of
-this migration.
+Nomad's migration store is a directory with ``nomad.ini`` and a other
+directories inside. Each directory in it containing ``migration.ini`` is a
+single migration and name of child directory is an identifier of migration.
 
-So directory structure looks like this::
+It looks like this::
 
   migrations/
+    nomad.ini
     2011-11-11-first-migration/
-      down.sql
+      migration.ini
       up.sql
     2011-11-12-second-migration/
-      down-0.py
-      down-1.sql
-      up.sql
-      up-1.py
+      migration.ini
+      1-pre.py
+      2-up.sql
+      3-post.py
 
-Those are main properties:
+Main properties:
 
-- Extension is not important, except when it's ``.sql``. SQL scripts will be
-  executed in context of your database, all other scripts will be executed just
-  by starting them (shebang ``#!`` is your friend, and keep it executable).
-- Name matters - it should start with ``up`` and ``down`` respectively for
-  upgrade and downgrade, and everything is executed in order. Order is
-  determined by using human sort (so that ``up-1.sql`` is earlier than
-  ``up-10.sql``, you can always check sorting with ``ls --sort=version``).
+- There is no downgrades - nobody ever tests them, they are rarely necessary
+- You can write migration in whatever language you want, tool only helps you
+  track applied migrations and dependencies
+- ``.sql`` is treated differently and executed against database, configured in
+  ``nomad.ini``
+- Only ``.sql`` and executable files are executed. You can put READMEs, pieces
+  of documentation, whatever you want alongside your migrations.
+- Name matters - everything is executed in order. Order is determined by using
+  human sort (so that ``x-1.sql`` is earlier than ``x-10.sql``, you can always
+  check sorting with ``ls --sort=version``).
