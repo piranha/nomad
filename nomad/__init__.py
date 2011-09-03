@@ -23,8 +23,7 @@ def getconfig(func):
         try:
             repo = Repository(kwargs['config'], kwargs['define'])
         except IOError, e:
-            print 'Error:', e
-            sys.exit(1)
+            abort(e)
 
         return func(repo=repo, *args, **kwargs)
     return inner
@@ -64,8 +63,7 @@ def create(name,
     try:
         deps = map(repo.get, dependecies)
     except NomadError, e:
-        print 'Error:', e
-        sys.exit(1)
+        abort(e)
 
     path = op.join(repo.path, name)
     try:

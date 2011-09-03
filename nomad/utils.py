@@ -32,7 +32,7 @@ def cachedproperty(f):
 
 
 def abort(msg, code=1):
-    cprint('Error: %s' % msg, 'red')
+    cprint('Error: %s' % msg, 'red', file=sys.stderr)
     sys.exit(code)
 
 
