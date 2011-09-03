@@ -94,7 +94,7 @@ def geturl(repo):
         except OSError, e:
             abort(e)
         return p1.communicate()[0].strip()
-    abort('cannot find an url in %s' % repo)
+    abort('database url in %s is not found' % repo)
 
 
 if __name__ == '__main__':

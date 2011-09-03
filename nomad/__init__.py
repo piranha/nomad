@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
 import os, os.path as op
-import sys
 
 from opster import Dispatcher
-from termcolor import cprint
+from termcolor import cprint, colored
 
 from nomad.repo import Repository
 from nomad.engine import DBError
@@ -22,7 +21,7 @@ def getconfig(func):
     def inner(*args, **kwargs):
         try:
             repo = Repository(kwargs['config'], kwargs['define'])
-        except IOError, e:
+        except (IOError, NomadError), e:
             abort(e)
 
         return func(repo=repo, *args, **kwargs)
@@ -50,18 +49,25 @@ def list(all=('a', False, 'show all migrations (default: only non-applied)'),
             if all:
                 cprint(m, 'magenta')
         else:
-            cprint(m, 'green')
+            out = colored(m, 'green')
+            deps = []
+            for dep in m.dependencies:
+                if dep not in repo.applied:
+                    deps.append(dep)
+            if deps:
+                out += ' (%s)' % ', '.join(map(str, deps))
+            print out
 
 
 @app.command()
 def create(name,
-           dependecies=('d', [], 'migration dependecies'),
+           dependencies=('d', [], 'migration dependencies'),
            **opts):
     '''Create new migration
     '''
     repo = opts['repo']
     try:
-        deps = map(repo.get, dependecies)
+        deps = map(repo.get, dependencies)
     except NomadError, e:
         abort(e)
 
@@ -75,7 +81,7 @@ def create(name,
 
     with file(op.join(path, 'migration.ini'), 'w') as f:
         f.write('[nomad]\n')
-        f.write('dependecies = %s\n' % ', '.join(d.name for d in deps))
+        f.write('dependencies = %s\n' % ', '.join(d.name for d in deps))
     with file(op.join(path, 'up.sql'), 'w') as f:
         f.write('-- SQL ALTER statements for database migration\n')
 
@@ -84,7 +90,7 @@ def create(name,
 def apply(all=('a', False, 'apply all available migrations'),
        *names,
        **opts):
-    '''Apply migrations
+    '''Apply migration and all of it dependencies
     '''
     repo = opts['repo']
     if names:
@@ -98,11 +104,14 @@ def apply(all=('a', False, 'apply all available migrations'),
         if m in repo.applied:
             abort('migration %s is already applied' % m)
     for m in migrations:
-        m.apply()
+        if not m.applied:
+            m.apply()
 
 
 @app.command()
 def info(**opts):
+    '''Show information about repository
+    '''
     repo = opts['repo']
     print '%s:' % repo
     print '  %s' % repo.engine

@@ -45,17 +45,24 @@ class Repository(object):
         self.path = self.conf.get('nomad', 'path',
                                   fallback=op.dirname(confpath) or '.')
 
-        enginepath = self.conf['nomad']['engine']
+        try:
+            enginepath = self.conf['nomad']['engine']
+        except KeyError:
+            raise NomadError('nomad.engine is not defined in config file')
         if not '.' in enginepath:
             enginepath = 'nomad.engine.' + enginepath
-        enginemod = __import__(enginepath, {}, {}, [''])
+        try:
+            enginemod = __import__(enginepath, {}, {}, [''])
+        except ImportError:
+            raise NomadError('engine %s is unknown' % enginepath)
         self.engine = getattr(enginemod, 'engine')(geturl(self))
 
     def __repr__(self):
         return '<%s: %s>' % (type(self).__name__, self.path)
 
     def get(self, name):
-        return Migration(self, name)
+        applied = name in self.appliednames
+        return Migration(self, name, applied=applied)
 
     # actual work is done here
     @tx(lambda self: self)
@@ -69,29 +76,36 @@ class Repository(object):
         return list(sorted(migrations))
 
     @cachedproperty
-    def applied(self):
-        return [self.get(x) for (x, ) in
+    def appliednames(self):
+        return [x for (x, ) in
                 self.engine.query('SELECT name FROM %s ORDER BY date' %
                                   self.conf['nomad']['table'])]
+
+    @property
+    def applied(self):
+        return [self.get(x) for x in self.appliednames]
 
 
 class Migration(object):
     SINGLETONS = {}
 
-    def __new__(cls, repo, name, force=False):
+    def __new__(cls, repo, name, **kwargs):
         if (repo, name) not in cls.SINGLETONS:
             cls.SINGLETONS[(repo, name)] = object.__new__(
-                cls, repo, name, force)
+                cls, repo, name, **kwargs)
         return cls.SINGLETONS[(repo, name)]
 
-    def __init__(self, repo, name, force=False):
+    def __init__(self, repo, name, force=False, applied=False):
         self.repo = repo
         self.name = name
         if not op.exists(op.join(repo.path, name)) and not force:
             raise NomadError('migration not found')
         self.conf = ConfigParser(interpolation=ExtendedInterpolation())
-        self.conf.read(op.join(repo.path, name, 'migration.ini'))
-        self.dependecies = self.conf.get('nomad', 'dependecies', fallback=[])
+        self.conf.read([op.join(repo.path, name, 'migration.ini')])
+        self._deps = [x.strip() for x in self.conf.get('nomad', 'dependencies',
+                                                       fallback='').split(',')
+                      if x.strip()]
+        self.applied = applied
 
     def __repr__(self):
         return '<%s: %s>' % (type(self).__name__, str(self))
@@ -112,8 +126,16 @@ class Migration(object):
     def path(self):
         return op.join(self.repo.path, self.name)
 
+    @cachedproperty
+    def dependencies(self):
+        return map(self.repo.get, self._deps)
+
     @tx(lambda self: self.repo)
     def apply(self):
+        for dep in self.dependencies:
+            if not dep.applied:
+                dep.apply()
+
         print 'applying migration %s:' % self
 
         for fn in os.listdir(self.path):
@@ -133,3 +155,4 @@ class Migration(object):
         self.repo.engine.query('INSERT INTO %s (name, date) VALUES (?, ?)'
                                % self.repo.conf['nomad']['table'],
                                self.name, datetime.now())
+        self.applied = True

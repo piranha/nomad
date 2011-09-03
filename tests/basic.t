@@ -34,3 +34,16 @@ Upgrading::
   CREATE TABLE test (value varchar(10));
   $ sqlite3 test.db 'select name from nomad'
   0-first
+
+Dependencies::
+
+  $ nomad create 1-second
+  $ nomad create 2-third -d 1-second
+  $ nomad ls
+  \x1b[32m1-second\x1b[0m (esc)
+  \x1b[32m2-third\x1b[0m (1-second) (esc)
+  $ nomad apply 2-third
+  applying migration 1-second:
+    sql migration applied: up.sql
+  applying migration 2-third:
+    sql migration applied: up.sql
