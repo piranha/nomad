@@ -15,6 +15,8 @@ Contents:
    DB API or anything what SQLAlchemy supports), but whole architecture is
    structured so that it is easy to add support for NoSQL dbs.
 
+.. image:: nomad.jpg
+   
 .. include:: ../README.rst
    :start-after: begin-writeup
    :end-before: end-writeup
