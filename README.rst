@@ -39,8 +39,8 @@ Main properties:
   track applied migrations and dependencies
 - ``.sql`` is treated differently and executed against database, configured in
   ``nomad.ini``
-- Only ``.sql`` and executable files are executed. You can put READMEs, pieces
-  of documentation, whatever you want alongside your migrations.
+- Only ``.sql`` and executable files (sorry, Windows!) are executed. You can put
+  READMEs, pieces of documentation, whatever you want alongside your migrations.
 - Name matters - everything is executed in order. Order is determined by using
   human sort (so that ``x-1.sql`` is earlier than ``x-10.sql``, you can always
   check sorting with ``ls --sort=version``).
