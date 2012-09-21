@@ -1,5 +1,10 @@
 .. -*- mode: rst -*-
 
+Basic nomad tests
+=================
+
+.. highlight:: console
+
 First, set up environment::
 
   $ cat > nomad.ini <<EOF

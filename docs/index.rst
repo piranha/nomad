@@ -1,15 +1,23 @@
-.. nomad documentation master file, created by
-   sphinx-quickstart on Sat Sep  3 17:08:47 2011.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to nomad's documentation!
-=================================
+Nomad
+=====
 
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
+
+   quick-start
+   urls
+   Basic tests <test-basic>
+   URL acquiring tests <test-urls>
+
+.. note:: Right now only SQL databases are supported (SQLite/MySQL/PgSQL through
+   DB API or anything what SQLAlchemy supports), but whole architecture is
+   structured so that it is easy to add support for NoSQL dbs.
+
+.. include:: ../README.rst
+   :start-after: begin-writeup
+   :end-before: end-writeup
 
 Indices and tables
 ==================
@@ -17,4 +25,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

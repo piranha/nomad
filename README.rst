@@ -12,12 +12,15 @@ migrate and can run pre- and post-processing routines written in any language
 
 .. image:: https://github.com/piranha/nomad/raw/master/docs/nomad.jpg
 
+.. begin-writeup
+
 Concept
 -------
 
 Nomad's migration store is a directory with ``nomad.ini`` and a other
 directories inside. Each directory in it containing ``migration.ini`` is a
-single migration and name of child directory is an identifier of migration.
+single migration and name of this child directory is an unique identifier of a
+migration.
 
 It looks like this::
 
@@ -32,7 +35,9 @@ It looks like this::
       2-up.sql
       3-post.py
 
-Main properties:
+
+Main properties
+---------------
 
 - There is no downgrades - nobody ever tests them, they are rarely necessary
 - You can write migration in whatever language you want, tool only helps you
@@ -44,3 +49,5 @@ Main properties:
 - Name matters - everything is executed in order. Order is determined by using
   human sort (so that ``x-1.sql`` is earlier than ``x-10.sql``, you can always
   check sorting with ``ls --sort=version``).
+
+.. end-writeup

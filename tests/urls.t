@@ -1,6 +1,11 @@
 .. -*- mode: rst -*-
 
+URL acquiring test
+==================
+
 Test different methods to acquire URLs.
+
+.. highlight:: console
 
 Directly specified URL::
 
