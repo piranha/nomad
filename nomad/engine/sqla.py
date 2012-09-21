@@ -5,7 +5,7 @@ from nomad.engine import BaseEngine, DBError
 
 class SAEngine(BaseEngine):
     def connect(self):
-        self._connection = create_engine(self.url)
+        return create_engine(self.url)
 
     def query(self, *args, **kwargs):
         try:

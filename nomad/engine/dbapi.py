@@ -3,7 +3,7 @@ import urlparse
 from nomad.engine import BaseEngine, DBError
 
 
-def p2d(p, **renames):
+def path2dict(p, **renames):
     '''Convert urlparse result to dict
     '''
     result = {}
@@ -17,94 +17,124 @@ def p2d(p, **renames):
     return result
 
 
-def pgfetch(c):
-    if c.rowcount == -1:
-        return []
-    from psycopg2 import ProgrammingError
-    try:
-        return c.fetchall()
-    except ProgrammingError:
-        return []
+class Connection(object):
+    exc = None
 
+    @property
+    def connection(self):
+        raise NotImplementedError()
 
-CONNECTORS = {
-    'sqlite': [{'mod': 'sqlite3',
-                'exc': lambda mod: mod.Error,
-                # [1:] strips first leading slash here
-                'connect': lambda m, p: m.connect(p.path[1:]),
-                'begin': lambda c: None,
-                'commit': lambda c: c.commit(),
-                'rollback': lambda c: c.rollback()}],
-    'mysql': [{'mod': 'MySQLdb',
-               'exc': lambda mod: mod.MySQLError,
-               'parameters': '%s',
-               'connect': lambda m, p: m.connect(
-                **p2d(p, hostname='host', password='passwd', path='db'))}],
-    'pgsql': [{'mod': 'psycopg2',
-               'exc': lambda mod: mod.Error,
-               'parameters': '%s',
-               'connect': lambda m, p: m.connect(
-                **p2d(p, hostname='host', path='database')),
-               'fetch': pgfetch,
-                'begin': lambda c: None,
-                'commit': lambda c: c.commit(),
-                'rollback': lambda c: c.rollback()}],
-    }
+    def prepare(self, statement):
+        return statement
 
-
-class DBEngine(BaseEngine):
-    info = None
-
-    def connect(self):
-        p = urlparse.urlparse(self.url)
-        if p.scheme not in CONNECTORS:
-            raise Exception('scheme %s not supported' % p.scheme)
-
-        for info in CONNECTORS[p.scheme]:
-            try:
-                mod = __import__(info['mod'])
-                self._connection = info['connect'](mod, p)
-                self.info = info
-                self.exc_class = info['exc'](mod)
-            except ImportError:
-                pass
-
-        if self._connection is None:
-            raise Exception('qqq')
+    def fetch(self, cursor):
+        return cursor.fetchall()
 
     def query(self, statement, *args):
+        statement = self.prepare(statement)
         c = self.connection.cursor()
-        if 'parameters' in self.info:
-            statement = statement.replace('?', self.info['parameters'])
-
         try:
             c.execute(statement, args)
-        except self.exc_class, e:
+        except self.exc, e:
             raise DBError(e)
 
-        if 'fetch' in self.info:
-            data = self.info['fetch'](c)
-        else:
-            data = c.fetchall()
-
+        data = self.fetch(c)
         c.close()
         return data
 
-    def _transaction(self, state):
-        self.connection # need info here
-        if state in self.info:
-            self.info[state](self.connection)
-        else:
-            self.query(state.upper())
-
     def begin(self):
-        return self._transaction('begin')
+        pass
 
     def commit(self):
-        return self._transaction('commit')
+        return self.connection.commit()
 
     def rollback(self):
-        return self._transaction('rollback')
+        return self.connection.rollback()
+
+
+class Sqlite(Connection):
+    _conn = None
+
+    def __init__(self, path):
+        # [1:] strips first leading slash here
+        self.path = path.path[1:]
+        import sqlite3
+        self.module = sqlite3
+        self.exc = sqlite3.Error
+
+    @property
+    def connection(self):
+        if not self._conn:
+            self._conn = self.module.connect(self.path)
+        return self._conn
+
+
+class Mysql(Connection):
+    _conn = None
+    def __init__(self, path):
+        self.parameters = path2dict(path, hostname='host',
+                                    password='passwd', path='db')
+        import MySQLdb
+        self.module = MySQLdb
+        self.exc = MySQLdb.MySQLError
+
+    @property
+    def connection(self):
+        if not self._conn:
+            self._conn = self.module.connect(**self.parameters)
+        return self._conn
+
+    def prepare(self, statement):
+        return statement.replace('?', '%s')
+
+    def begin(self):
+        return self.query('BEGIN')
+
+    def commit(self):
+        return self.query('COMMIT')
+
+    def rollback(self):
+        return self.query('ROLLBACK')
+
+
+class Pgsql(Connection):
+    _conn = None
+    def __init__(self, path):
+        self.parameters = path2dict(path, hostname='host', path='database')
+        import psycopg2
+        self.module = psycopg2
+        self.exc = psycopg2.Error
+
+    @property
+    def connection(self):
+        if not self._conn:
+            self._conn = self.module.connect(**self.parameters)
+        return self._conn
+
+    def prepare(self, statement):
+        return statement.replace('?', '%s')
+
+    def fetch(self, cursor):
+        if cursor.rowcount == -1:
+            return []
+        try:
+            return cursor.fetchall()
+        except self.module.ProgrammingError:
+            return []
+
+
+CONNECTORS = {'sqlite': Sqlite, 'mysql': Mysql, 'pgsql': Pgsql}
+
+
+class DBEngine(BaseEngine):
+    def connect(self):
+        p = urlparse.urlparse(self.url)
+        if p.scheme not in CONNECTORS:
+            raise DBError('scheme %s not supported' % p.scheme)
+        return CONNECTORS[p.scheme](p)
+
+    def query(self, statement, *args):
+        return self.connection.query(statement, *args)
 
 
 engine = DBEngine

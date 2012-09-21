@@ -7,26 +7,26 @@ class BaseEngine(object):
     def __repr__(self):
         return '<%s: %s>' % (type(self).__name__, self.url)
 
+    @property
+    def connection(self):
+        if not self._connection:
+            self._connection = self.connect()
+        return self._connection
+
     def connect(self):
         raise NotImplementedError()
 
     def query(self, statement, *args, **kwargs):
         raise NotImplementedError()
 
-    @property
-    def connection(self):
-        if not self._connection:
-            self.connect()
-        return self._connection
-
     def begin(self):
-        self.query('BEGIN')
+        self.connection.begin()
 
     def commit(self):
-        self.query('COMMIT')
+        self.connection.commit()
 
     def rollback(self):
-        self.query('ROLLBACK')
+        self.connection.rollback()
 
     @property
     def datetime_type(self):
