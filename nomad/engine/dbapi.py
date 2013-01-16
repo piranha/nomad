@@ -7,7 +7,7 @@ def path2dict(p, **renames):
     '''Convert urlparse result to dict
     '''
     result = {}
-    for k in 'hostname port path user password'.split():
+    for k in 'hostname port path username password'.split():
         value = getattr(p, k, None)
         if not value:
             continue
@@ -73,7 +73,7 @@ class Mysql(Connection):
     _conn = None
     def __init__(self, path):
         self.parameters = path2dict(path, hostname='host',
-                                    password='passwd', path='db')
+                                    password='passwd', path='db', username='user')
         import MySQLdb
         self.module = MySQLdb
         self.exc = MySQLdb.MySQLError
@@ -100,7 +100,7 @@ class Mysql(Connection):
 class Pgsql(Connection):
     _conn = None
     def __init__(self, path):
-        self.parameters = path2dict(path, hostname='host', path='database')
+        self.parameters = path2dict(path, hostname='host', path='database', username='user')
         import psycopg2
         self.module = psycopg2
         self.exc = psycopg2.Error
