@@ -43,16 +43,16 @@ And a `nomad.ini` could look like this::
 
 Possible options for `engine`:
 
- - `sqla` - use SQLAlchemy as an adapter, supports everything SQLAlchemy supports
- - `dbapi` - use regular DB API, supports `sqlite`, `mysql` and `pgsql`
+- `sqla` - use SQLAlchemy as an adapter, supports everything SQLAlchemy supports
+- `dbapi` - use regular DB API, supports `sqlite`, `mysql` and `pgsql`
 
 `url` can be defined in a few various ways:
 
- - `url = <YOUR-URL-TO-DB>` - just a static connection url
- - `url-file = <PATH-TO-FILE>` - a path to file containing connection url
- - `url-python = <python.mod.variable>` - a Python path to a module, containing
-   a variable with connection url
- - `url-command = <cmd-to-execute>` - command line to execute to get connection url
+- `url = <YOUR-URL-TO-DB>` - just a static connection url
+- `url-file = <PATH-TO-FILE>` - a path to file containing connection url
+- `url-python = <python.mod.variable>` - a Python path to a module, containing
+  a variable with connection url
+- `url-command = <cmd-to-execute>` - command line to execute to get connection url
 
 
 Main properties
