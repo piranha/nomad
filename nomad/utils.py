@@ -14,6 +14,9 @@ NUM_RE = re.compile('(\d+)')
 class NomadError(Exception):
     pass
 
+class NomadIniNotFound(Exception):
+    pass
+
 
 def cachedproperty(f):
     """Returns a cached property that is calculated by function f

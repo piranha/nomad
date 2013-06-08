@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-import os, os.path as op
+import os, os.path as op, sys
 
 from opster import Dispatcher
 from termcolor import cprint, colored
 
 from nomad.repo import Repository
 from nomad.engine import DBError
-from nomad.utils import abort, NomadError
+from nomad.utils import abort, NomadError, NomadIniNotFound
 
 
 GLOBAL = [
@@ -15,12 +15,24 @@ GLOBAL = [
     ('D', 'define', {}, 'override config values'),
     ]
 
+
+EXAMPLE_INI = '''
+  [nomad]
+  engine = dbapi
+  url = sqlite://data.db
+'''
+
+
 def getconfig(func):
     if func.__name__.startswith('help'):
         return func
     def inner(*args, **kwargs):
         try:
             repo = Repository(kwargs['config'], kwargs['define'])
+        except NomadIniNotFound, e:
+            sys.stderr.write('Create %r to use nomad, example:\n%s\n' %
+                             (e.message, EXAMPLE_INI))
+            abort('config file not found')
         except (IOError, NomadError), e:
             abort(e)
 

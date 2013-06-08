@@ -4,7 +4,7 @@ from configparser import ConfigParser, ExtendedInterpolation
 from subprocess import call
 from functools import wraps
 
-from nomad.utils import cachedproperty, geturl, NomadError
+from nomad.utils import cachedproperty, geturl, NomadError, NomadIniNotFound
 
 
 def tx(getrepo):
@@ -36,7 +36,7 @@ class Repository(object):
                 })
         self.conf.read_dict(self.DEFAULTS)
         if not self.conf.read([confpath]):
-            raise IOError('configuration file %r not found' % confpath)
+            raise NomadIniNotFound(confpath)
 
         for k, v in (overrides or {}).iteritems():
             section, key = k.split('.')
