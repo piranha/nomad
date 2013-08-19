@@ -12,6 +12,7 @@ help:
 	@echo "  docs  build docs"
 	@echo "  open  open docs"
 	@echo "  test  run tests"
+	@echo "  pub   publish to PyPI"
 
 docs:
 	cd docs && make
@@ -36,3 +37,6 @@ endif
 
 itest:
 	cram -i tests/*.t
+
+pub:
+	python setup.py sdist upload
