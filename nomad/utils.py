@@ -79,47 +79,61 @@ def loadpath(path):
         return imp.load_source(modname, path)
 
 
+### URL retrievers
+
+def get_python(path):
+    pypath, attr = path.split(':')
+    if '/' in pypath or pypath.endswith('.py'):
+        # load from file
+        mod = loadpath(pypath)
+    else:
+        # load from sys.path
+        mod = __import__(pypath, {}, {}, [''])
+    return reduce(lambda x, y: getattr(x, y), attr.split('.'), mod)
+
+
+def get_file(path):
+    return open(path).read().strip()
+
+
+def get_command(cmd):
+    p1 = Popen(shell_split(cmd), stdout=PIPE)
+    return p1.communicate()[0].strip().decode('utf-8')
+
+
+def get_json(path):
+    fn, path = path.split(':')
+    obj = json.load(open(fn))
+    path = map(lambda x: int(x) if x.isdigit() else x, path.split('.'))
+    return reduce(lambda x, y: x[y], path, obj)
+
+
+def get_ini(path):
+    fn, path = path.split(':')
+    section, key = path.split('.')
+    cfg = ConfigParser(interpolation=ExtendedInterpolation())
+    cfg.read([fn])
+    return cfg[section][key]
+
+
+URLTYPES = {
+    'url': lambda url: url,
+    'url-python': get_python,
+    'url-file': get_file,
+    'url-command': get_command,
+    'url-json': get_json,
+    'url-ini': get_ini,
+    }
+
+
 def geturl(repo):
     conf = repo.conf['nomad']
-    if 'url' in conf:
-        return conf['url']
-    if 'url-python' in conf:
-        pypath, attr = conf['url-python'].split(':')
-        if '/' in pypath or pypath.endswith('.py'):
-            # load from file
-            mod = loadpath(pypath)
-        else:
-            # load from sys.path
-            mod = __import__(pypath, {}, {}, [''])
-        return reduce(lambda x, y: getattr(x, y), attr.split('.'), mod)
-    if 'url-file' in conf:
-        try:
-            return open(conf['url-file']).read().strip()
-        except IOError, e:
-            abort(e)
-    if 'url-command' in conf:
-        try:
-            p1 = Popen(shell_split(conf['url-command']), stdout=PIPE)
-        except OSError, e:
-            abort(e)
-        return p1.communicate()[0].strip().decode('utf-8')
-    if 'url-json' in conf:
-        fn, path = conf['url-json'].split(':')
-        try:
-            obj = json.load(open(fn))
-            path = map(lambda x: int(x) if x.isdigit() else x, path.split('.'))
-            return reduce(lambda x, y: x[y], path, obj)
-        except (IOError, ValueError), e:
-            abort(e)
-    if 'url-ini' in conf:
-        fn, path = conf['url-ini'].split(':')
-        cfg = ConfigParser(interpolation=ExtendedInterpolation())
-        try:
-            cfg.read([fn])
-            section, key = path.split('.')
-            return cfg[section][key]
-        except (IOError, KeyError), e:
-            abort(e)
+    for k, fn in URLTYPES.iteritems():
+        if k in conf:
+            try:
+                return fn(conf[k])
+            except (IOError, OSError, KeyError), e:
+                abort(e)
     abort('database url in %s is not found' % repo)
 
 
