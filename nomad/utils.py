@@ -3,6 +3,7 @@ import re
 import os, os.path as op
 import shlex
 import imp
+import json
 from subprocess import Popen, PIPE
 
 from termcolor import cprint
@@ -101,6 +102,14 @@ def geturl(repo):
         except OSError, e:
             abort(e)
         return p1.communicate()[0].strip().decode('utf-8')
+    if 'url-json' in conf:
+        fn, path = conf['url-json'].split(':', 1)
+        try:
+            obj = json.load(open(fn))
+            path = map(lambda x: int(x) if x.isdigit() else x, path.split('.'))
+            return reduce(lambda x, y: x[y], path, obj)
+        except (IOError, ValueError), e:
+            abort(e)
     abort('database url in %s is not found' % repo)
 
 
