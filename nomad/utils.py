@@ -89,7 +89,10 @@ def get_python(path):
     else:
         # load from sys.path
         mod = __import__(pypath, {}, {}, [''])
-    return reduce(lambda x, y: getattr(x, y), attr.split('.'), mod)
+    try:
+        return reduce(lambda x, y: getattr(x, y), attr.split('.'), mod)
+    except AttributeError:
+        raise AttributeError("No attr '%s' in module %s" % (attr, pypath))
 
 
 def get_file(path):
@@ -113,7 +116,10 @@ def get_ini(path):
     section, key = path.split('.')
     cfg = ConfigParser(interpolation=ExtendedInterpolation())
     cfg.read([fn])
-    return cfg[section][key]
+    try:
+        return cfg[section][key]
+    except KeyError:
+        raise KeyError('%s not found in %s' % (path, fn))
 
 
 URLTYPES = {
