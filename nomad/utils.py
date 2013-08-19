@@ -7,6 +7,11 @@ from subprocess import Popen, PIPE
 
 from termcolor import cprint
 
+if sys.version_info[0] == 3:
+    shell_split = shlex.split
+else:
+    def shell_split(cmd):
+        return shlex.split(cmd.encode('utf-8'))
 
 NUM_RE = re.compile('(\d+)')
 
@@ -77,7 +82,7 @@ def geturl(repo):
     if 'url' in conf:
         return conf['url']
     if 'url-python' in conf:
-        pypath, attr = conf['url-python'].encode('utf-8').split(':')
+        pypath, attr = conf['url-python'].split(':')
         if '/' in pypath or pypath.endswith('.py'):
             # load from file
             mod = loadpath(pypath)
@@ -87,16 +92,15 @@ def geturl(repo):
         return reduce(lambda x, y: getattr(x, y), attr.split('.'), mod)
     if 'url-file' in conf:
         try:
-            return file(conf['url-file']).read().strip()
+            return open(conf['url-file']).read().strip()
         except IOError, e:
             abort(e)
     if 'url-command' in conf:
         try:
-            p1 = Popen(shlex.split(conf['url-command'].encode('utf-8')),
-                       stdout=PIPE)
+            p1 = Popen(shell_split(conf['url-command']), stdout=PIPE)
         except OSError, e:
             abort(e)
-        return p1.communicate()[0].strip()
+        return p1.communicate()[0].strip().decode('utf-8')
     abort('database url in %s is not found' % repo)
 
 

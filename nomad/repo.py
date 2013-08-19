@@ -53,8 +53,8 @@ class Repository(object):
             enginepath = 'nomad.engine.' + enginepath
         try:
             enginemod = __import__(enginepath, {}, {}, [''])
-        except ImportError:
-            raise NomadError('engine %s is unknown' % enginepath)
+        except ImportError, e:
+            raise NomadError('cannot use engine %s: %s' % (enginepath, e))
         self.engine = getattr(enginemod, 'engine')(geturl(self))
 
     def __repr__(self):
@@ -90,10 +90,10 @@ class Migration(object):
     SINGLETONS = {}
 
     def __new__(cls, repo, name, **kwargs):
-        if (repo, name) not in cls.SINGLETONS:
-            cls.SINGLETONS[(repo, name)] = object.__new__(
-                cls, repo, name, **kwargs)
-        return cls.SINGLETONS[(repo, name)]
+        key = (repo, name)
+        if key not in cls.SINGLETONS:
+            cls.SINGLETONS[key] = object.__new__(cls)
+        return cls.SINGLETONS[key]
 
     def __init__(self, repo, name, force=False, applied=False):
         self.repo = repo
@@ -113,14 +113,10 @@ class Migration(object):
     def __str__(self):
         return self.name
 
-    def __cmp__(self, other):
+    def __lt__(self, other):
         if isinstance(other, Migration) and self.repo == other.repo:
-            if self.name == other.name:
-                return 0
-            if self.name < other.name:
-                return -1
-            return 1
-        return id(self) - id(other)
+            return self.name < other.name
+        raise TypeError('Migrations can be compared only with other migrations')
 
     @property
     def path(self):
@@ -143,7 +139,7 @@ class Migration(object):
                 continue
             path = op.join(self.path, fn)
             if fn.endswith('.sql'):
-                with file(path) as f:
+                with open(path) as f:
                     self.repo.engine.query(f.read())
                 print '  sql migration applied: %s' % fn
             elif os.access(path, os.X_OK):

@@ -9,12 +9,13 @@ Test different methods to acquire URLs.
 
 Directly specified URL::
 
+  $ NOMAD=${NOMAD:-nomad}
   $ cat > nomad.ini <<EOF
   > [nomad]
   > engine = sqla
   > url = sqlite:///test.db
   > EOF
-  $ nomad info
+  $ $NOMAD info
   <Repository: .>:
     <SAEngine: sqlite:///test.db>
     Uninitialized repository
@@ -34,7 +35,7 @@ URL from Python object from ``sys.path``::
   > engine = sqla
   > url-python = somemod:dburl
   > EOF
-  $ PYTHONPATH=. nomad info
+  $ PYTHONPATH=.:$PYTHONPATH $NOMAD info
   <Repository: .>:
     <SAEngine: sqlite:///test-py.db>
     Uninitialized repository
@@ -47,7 +48,7 @@ URL from Python object using path::
   > engine = sqla
   > url-python = \${confdir}/somemod.py:dburl
   > EOF
-  $ nomad info
+  $ $NOMAD info
   <Repository: .>:
     <SAEngine: sqlite:///test-py.db>
     Uninitialized repository
@@ -62,7 +63,7 @@ URL from Python package::
   > engine = sqla
   > url-python = \${confdir}/package:dburl
   > EOF
-  $ nomad info
+  $ $NOMAD info
   <Repository: .>:
     <SAEngine: sqlite:///test-py.db>
     Uninitialized repository
@@ -76,7 +77,7 @@ URL from a file::
   > engine = sqla
   > url-file = url
   > EOF
-  $ nomad info
+  $ $NOMAD info
   <Repository: .>:
     <SAEngine: sqlite:///test-file.db>
     Uninitialized repository
@@ -90,7 +91,7 @@ URL from a command::
   > engine = sqla
   > url-command = cat url
   > EOF
-  $ nomad info
+  $ $NOMAD info
   <Repository: .>:
     <SAEngine: sqlite:///test-file.db>
     Uninitialized repository
@@ -99,6 +100,6 @@ URL from a command::
 Nothing defined::
 
   $ echo '[nomad]\nengine=sqla' > nomad.ini
-  $ nomad info
+  $ $NOMAD info
   \x1b[31mError: database url in <Repository: .> is not found\x1b[0m (esc)
   [1]

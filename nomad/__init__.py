@@ -50,8 +50,8 @@ def init(**opts):
     print 'Versioning table initialized successfully'
 
 
-@app.command(aliases=('ls',))
-def list(all=('a', False, 'show all migrations (default: only non-applied)'),
+@app.command(name='list', aliases=('ls',))
+def list_(all=('a', False, 'show all migrations (default: only non-applied)'),
          **opts):
     '''List migrations
     '''
@@ -91,10 +91,10 @@ def create(name,
             abort('directory %s already exists' % path)
         raise
 
-    with file(op.join(path, 'migration.ini'), 'w') as f:
+    with open(op.join(path, 'migration.ini'), 'w') as f:
         f.write('[nomad]\n')
         f.write('dependencies = %s\n' % ', '.join(d.name for d in deps))
-    with file(op.join(path, 'up.sql'), 'w') as f:
+    with open(op.join(path, 'up.sql'), 'w') as f:
         f.write('-- SQL ALTER statements for database migration\n')
 
 
