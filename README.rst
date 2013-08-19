@@ -10,6 +10,9 @@ whatever you are using to access your database. It uses simple SQL scripts to
 migrate and can run pre- and post-processing routines written in any language
 (Python, Ruby or whatever do you use for your application).
 
+.. image:: https://travis-ci.org/piranha/nomad.png
+   :target: https://travis-ci.org/piranha/nomad
+
 .. image:: https://github.com/piranha/nomad/raw/master/docs/nomad.jpg
 
 .. begin-writeup
@@ -35,7 +38,7 @@ It looks like this::
       2-up.sql
       3-post.py
 
-And a `nomad.ini` could look like this::
+And a ``nomad.ini`` could look like this::
 
   [nomad]
   engine = sqla
@@ -50,12 +53,21 @@ Possible options for ``engine``:
 
 - ``url = <your-url-to-db>`` - just a static connection url
 - ``url-file = <path-to-file>`` - a path to file containing connection url
-- ``url-python = <python.mod.variable>`` - a Python path to a module, containing
-  a variable with connection url
+- ``url-python = <python.mod>:<variable.name>`` - a Python path to a module,
+  containing a variable with connection url
 - ``url-command = <cmd-to-execute>`` - command line to execute to get connection
   url
 - ``url-json = <path-to-file>:key.0.key`` - path to file with JSON and then path
-  to a connection url inside JSON object
+  to a connection url within JSON object
+- ``url-ini = <path-to-file>:<section.key>`` - path to INI file (parsed by
+  configparser with extended interpolation) and then path to a connection url
+  within this file
+
+Note that ``nomad.ini`` is parsed with extended interpolation (use it like
+``${var}`` or ``${section.var}``), and provides two predefined variables:
+
+ - ``confpath`` - path to ``nomad.ini``
+ - ``confdir`` - path to directory, containing ``nomad.ini``
 
 
 Main properties

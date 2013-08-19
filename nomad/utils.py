@@ -5,6 +5,7 @@ import shlex
 import imp
 import json
 from subprocess import Popen, PIPE
+from configparser import ConfigParser, ExtendedInterpolation
 
 from termcolor import cprint
 
@@ -103,12 +104,21 @@ def geturl(repo):
             abort(e)
         return p1.communicate()[0].strip().decode('utf-8')
     if 'url-json' in conf:
-        fn, path = conf['url-json'].split(':', 1)
+        fn, path = conf['url-json'].split(':')
         try:
             obj = json.load(open(fn))
             path = map(lambda x: int(x) if x.isdigit() else x, path.split('.'))
             return reduce(lambda x, y: x[y], path, obj)
         except (IOError, ValueError), e:
+            abort(e)
+    if 'url-ini' in conf:
+        fn, path = conf['url-ini'].split(':')
+        cfg = ConfigParser(interpolation=ExtendedInterpolation())
+        try:
+            cfg.read([fn])
+            section, key = path.split('.')
+            return cfg[section][key]
+        except (IOError, KeyError), e:
             abort(e)
     abort('database url in %s is not found' % repo)
 

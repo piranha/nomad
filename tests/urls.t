@@ -96,6 +96,32 @@ URL from a command::
     <SAEngine: sqlite:///test-file.db>
     Uninitialized repository
 
+URL from JSON file::
+
+  $ echo '{"db": [{"url": "sqlite:///test-file.db"}]}' > url.json
+  $ cat > nomad.init <<EOF
+  > [nomad]
+  > engine = sqla
+  > url-json = url.json:db.0.url
+  > EOF
+  $ $NOMAD info
+  <Repository: .>:
+    <SAEngine: sqlite:///test-file.db>
+    Uninitialized repository
+
+URL from INI file::
+
+  $ echo '[db]\nurl = sqlite:///test-file.db' > url.ini
+  $ cat > nomad.init <<EOF
+  > [nomad]
+  > engine = sqla
+  > url-ini = url.ini:db.url
+  > EOF
+  $ $NOMAD info
+  <Repository: .>:
+    <SAEngine: sqlite:///test-file.db>
+    Uninitialized repository
+
 
 Nothing defined::
 
