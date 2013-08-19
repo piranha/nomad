@@ -66,8 +66,8 @@ Possible options for ``engine``:
 Note that ``nomad.ini`` is parsed with extended interpolation (use it like
 ``${var}`` or ``${section.var}``), and provides two predefined variables:
 
- - ``confpath`` - path to ``nomad.ini``
- - ``confdir`` - path to directory, containing ``nomad.ini``
+- ``confpath`` - path to ``nomad.ini``
+- ``confdir`` - path to directory, containing ``nomad.ini``
 
 
 Main properties
