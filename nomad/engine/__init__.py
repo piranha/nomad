@@ -30,7 +30,7 @@ class BaseEngine(object):
 
     @property
     def datetime_type(self):
-        if self.url.startswith('pgsql:'):
+        if self.url.startswith('pgsql') or self.url.startswith('postgresql'):
             return 'timestamp'
         return 'datetime'
 
