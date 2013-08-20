@@ -79,6 +79,10 @@ def loadpath(path):
         return imp.load_source(modname, path)
 
 
+def clean_sql(sql):
+    return '\n'.join(x for x in sql.split('\n')
+                     if not x.strip().startswith('--'))
+
 ### URL retrievers
 
 def get_python(path):

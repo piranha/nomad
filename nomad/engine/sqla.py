@@ -8,7 +8,7 @@ class SAEngine(BaseEngine):
         return create_engine(self.url)
 
     def prepare(self, statement):
-        if self.connection.name in ('mysql', 'pgsql'):
+        if self.connection.name in ('mysql', 'pgsql', 'postgresql'):
             return statement.replace('?', '%s')
         return statement
 

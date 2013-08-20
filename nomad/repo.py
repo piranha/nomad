@@ -4,7 +4,8 @@ from configparser import ConfigParser, ExtendedInterpolation
 from subprocess import call
 from functools import wraps
 
-from nomad.utils import cachedproperty, geturl, NomadError, NomadIniNotFound
+from nomad.utils import (cachedproperty, geturl, NomadError, NomadIniNotFound,
+                         clean_sql)
 
 
 def tx(getrepo):
@@ -140,7 +141,7 @@ class Migration(object):
             path = op.join(self.path, fn)
             if fn.endswith('.sql'):
                 with open(path) as f:
-                    self.repo.engine.query(f.read())
+                    self.repo.engine.query(clean_sql(f.read()))
                 print '  sql migration applied: %s' % fn
             elif os.access(path, os.X_OK):
                 call(path)
@@ -150,5 +151,5 @@ class Migration(object):
 
         self.repo.engine.query('INSERT INTO %s (name, date) VALUES (?, ?)'
                                % self.repo.conf['nomad']['table'],
-                               self.name, datetime.now())
+                               self.name, str(datetime.now()))
         self.applied = True
