@@ -17,15 +17,15 @@ migrate and can run pre- and post-processing routines written in any language
 
 .. begin-writeup
 
-Concept
+Layout
 -------
 
-Nomad's migration store is a directory with ``nomad.ini`` and a other
-directories inside. Each directory in it containing ``migration.ini`` is a
-single migration and name of this child directory is an unique identifier of a
+Nomad's migration store is a directory with ``nomad.ini`` and directories with
+migrations inside. Each such directory must contain ``migration.ini`` to be
+recognized as a migration and this directory name is an unique identifier of a
 migration.
 
-It looks like this::
+Your directory tree thus will look like this::
 
   migrations/
     nomad.ini
@@ -38,37 +38,93 @@ It looks like this::
       2-up.sql
       3-post.py
 
-And a ``nomad.ini`` could look like this::
+Nomad uses table called ``nomad`` to track what was applied already. It's just a
+list of applied migrations and dates when they were applied.
+
+Usage
+-----
+
+To start working, create ``nomad.ini``, and initialize your database (I assume
+it already exists)::
+
+  $ nomad init
+
+Then you can start creating your first migration::
+
+  $ nomad create 0-initial
+
+Put your ALTERs and CREATEs in ``0-initial/up.sql`` and apply a migration::
+
+  $ nomad apply -a # or nomad apply 0-initial
+
+Nomad should report which migrations it applied successfully, but you can check
+status of that with ``nomad ls -a`` (or ``nomad ls`` to see only unapplied
+migrations).
+
+I guess it's time to create new migration:
+
+  $ nomad create 1-next -d 0-initial
+
+``-d 0-initial`` means you want your ``1-next`` to depend on ``0-initial``. This
+means nomad will never apply ``1-next`` without applying ``0-initial``
+first. You usually want to depend on migrations which created tables you're
+going to alter, or just to make it easier - on the latest available migration.
+
+Configuration
+-------------
+
+Nomad reads configuration from ``nomad.ini``, here is an example::
 
   [nomad]
   engine = sqla
   url = pgsql://user:password@host:port/db
 
-Possible options for ``engine``:
+Possible configuration options:
 
-- ``sqla`` - use SQLAlchemy as an adapter, supports everything SQLAlchemy supports
-- ``dbapi`` - use regular DB API, supports ``sqlite``, ``mysql`` and ``pgsql``
+- ``engine`` (required) - SQL engine to use, possible options:
+  - ``sqla`` - use SQLAlchemy as an adapter, supports everything SQLAlchemy supports
+  - ``dbapi`` - use regular DB API, supports ``sqlite``, ``mysql`` and ``pgsql``
+- ``url`` (required) - URL to database, takes multiple options, see format below
+- ``path`` - path to migrations (default: directory with ``nomad.ini``)
 
-``url`` can be defined in a few various ways:
+Each migration has its own ``migration.ini`` file, which at the moment has
+single configuration option, ``nomad.dependencies``, defining which migration
+(or migrations) this one depends.
 
-- ``url = <your-url-to-db>`` - just a static connection url
-- ``url-file = <path-to-file>`` - a path to file containing connection url
-- ``url-python = <python.mod>:<variable.name>`` - a Python path to a module,
-  containing a variable with connection url
-- ``url-command = <cmd-to-execute>`` - command line to execute to get connection
-  url
-- ``url-json = <path-to-file>:key.0.key`` - path to file with JSON and then path
-  to a connection url within JSON object
-- ``url-ini = <path-to-file>:<section.key>`` - path to INI file (parsed by
-  configparser with extended interpolation) and then path to a connection url
-  within this file
-
-Note that ``nomad.ini`` is parsed with extended interpolation (use it like
-``${var}`` or ``${section.var}``), and provides two predefined variables:
+Note that ini-files are parsed with extended interpolation (use it like
+``${var}`` or ``${section.var}``), two predefined variables are provided:
 
 - ``confpath`` - path to ``nomad.ini``
 - ``confdir`` - path to directory, containing ``nomad.ini``
+- ``dir`` (migration only) - path to directory of migration
 
+URL format
+~~~~~~~~~~
+
+Nomad can read connection url to database in a few various ways. ``nomad.url``
+configuration option is a space separated list of descriptions of how nomad can
+obtain database connection url.
+
+The easiest one is simply an url (like in config example). The others are:
+
+- ``file:<path-to-file>`` - a path to file containing connection url
+- ``py:<python.mod>:<variable.name>`` - a Python path to a module,
+  containing a variable with connection url
+- ``cmd:<cmd-to-execute>`` - command line to execute to get connection
+  url
+- ``json:<path-to-file>:key.0.key`` - path to file with JSON and then path
+  to a connection url within JSON object
+- ``ini:<path-to-file>:<section.key>`` - path to INI file (parsed by
+  configparser with extended interpolation) and then path to a connection url
+  within this file
+
+An example::
+
+  [nomad]
+  url =
+    ini:${confdir}/../settings.ini:db.url
+    json:${confdir}/../settings.json:db.url
+    sqlite:///${confdir}/../local.db
 
 Main properties
 ---------------

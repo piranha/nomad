@@ -46,6 +46,12 @@ def abort(msg, code=1):
     sys.exit(code)
 
 
+def shsplit(s):
+    if not isinstance(s, str):
+        s = s.encode('utf-8')
+    return shlex.split(s)
+
+
 def humankey(fn):
   '''Turn a string into a list of substrings and numbers.
 
@@ -127,24 +133,27 @@ def get_ini(path):
 
 
 URLTYPES = {
-    'url': lambda url: url,
-    'url-python': get_python,
-    'url-file': get_file,
-    'url-command': get_command,
-    'url-json': get_json,
-    'url-ini': get_ini,
+    'python': get_python,
+    'py': get_python,
+    'file': get_file,
+    'command': get_command,
+    'cmd': get_command,
+    'json': get_json,
+    'ini': get_ini,
     }
 
 
-def geturl(repo):
-    conf = repo.conf['nomad']
-    for k, fn in URLTYPES.iteritems():
-        if k in conf:
+def geturl(urlspec):
+    for url in shsplit(urlspec):
+        bits = url.split(':', 1)
+        if len(bits) > 1 and bits[0] in URLTYPES:
             try:
-                return fn(conf[k])
-            except (IOError, OSError, KeyError), e:
-                abort(e)
-    abort('database url in %s is not found' % repo)
+                return URLTYPES[bits[0]](bits[1])
+            except (IOError, OSError, KeyError):
+                pass
+        else:
+            return url
+    abort("could not read database url from spec '%s'" % urlspec)
 
 
 if __name__ == '__main__':

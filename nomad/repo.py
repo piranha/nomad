@@ -5,7 +5,7 @@ from subprocess import call
 from functools import wraps
 
 from nomad.utils import (cachedproperty, geturl, NomadError, NomadIniNotFound,
-                         clean_sql)
+                         clean_sql, abort)
 
 
 def tx(getrepo):
@@ -30,11 +30,12 @@ class Repository(object):
         }
 
     def __init__(self, confpath, overrides=None):
-        self.conf = ConfigParser(interpolation=ExtendedInterpolation(),
-                                 defaults={
+        self.conf = ConfigParser(
+            interpolation=ExtendedInterpolation(),
+            defaults={
                 'confpath': op.abspath(confpath),
                 'confdir': op.dirname(op.abspath(confpath)),
-                })
+            })
         self.conf.read_dict(self.DEFAULTS)
         if not self.conf.read([confpath]):
             raise NomadIniNotFound(confpath)
@@ -43,6 +44,7 @@ class Repository(object):
             section, key = k.split('.')
             self.conf.set(section, key, v)
 
+        self.confpath = confpath
         self.path = self.conf.get('nomad', 'path',
                                   fallback=op.dirname(confpath) or '.')
 
@@ -56,7 +58,11 @@ class Repository(object):
             enginemod = __import__(enginepath, {}, {}, [''])
         except ImportError, e:
             raise NomadError('cannot use engine %s: %s' % (enginepath, e))
-        self.engine = getattr(enginemod, 'engine')(geturl(self))
+        try:
+            url = geturl(self.conf['nomad']['url'])
+        except KeyError:
+            abort('database url in %s is not found' % self)
+        self.engine = getattr(enginemod, 'engine')(url)
 
     def __repr__(self):
         return '<%s: %s>' % (type(self).__name__, self.path)
@@ -101,7 +107,13 @@ class Migration(object):
         self.name = name
         if not op.exists(op.join(repo.path, name)) and not force:
             raise NomadError('migration not found')
-        self.conf = ConfigParser(interpolation=ExtendedInterpolation())
+        self.conf = ConfigParser(
+            interpolation=ExtendedInterpolation(),
+            defaults={
+                'confpath': op.abspath(self.repo.confpath),
+                'confdir': op.dirname(op.abspath(self.repo.confpath)),
+                'dir': op.abspath(op.join(repo.path, name))
+            })
         self.conf.read([op.join(repo.path, name, 'migration.ini')])
         self._deps = [x.strip() for x in self.conf.get('nomad', 'dependencies',
                                                        fallback='').split(',')

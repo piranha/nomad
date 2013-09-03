@@ -30,8 +30,8 @@ def getconfig(func):
         try:
             repo = Repository(kwargs['config'], kwargs['define'])
         except NomadIniNotFound, e:
-            sys.stderr.write('Create %r to use nomad, example:\n%s\n' %
-                             (e.message, EXAMPLE_INI))
+            sys.stderr.write("Create '%s' to use nomad, example:\n%s\n" %
+                             (e, EXAMPLE_INI))
             abort('config file not found')
         except (IOError, NomadError), e:
             abort(e)

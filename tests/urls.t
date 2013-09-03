@@ -33,7 +33,7 @@ URL from Python object from ``sys.path``::
   $ cat > nomad.ini <<EOF
   > [nomad]
   > engine = sqla
-  > url-python = somemod:dburl
+  > url = python:somemod:dburl
   > EOF
   $ PYTHONPATH=.:$PYTHONPATH $NOMAD info
   <Repository: .>:
@@ -46,7 +46,7 @@ URL from Python object using path::
   $ cat > nomad.ini <<EOF
   > [nomad]
   > engine = sqla
-  > url-python = \${confdir}/somemod.py:dburl
+  > url = python:\${confdir}/somemod.py:dburl
   > EOF
   $ $NOMAD info
   <Repository: .>:
@@ -61,7 +61,7 @@ URL from Python package::
   $ cat > nomad.ini <<EOF
   > [nomad]
   > engine = sqla
-  > url-python = \${confdir}/package:dburl
+  > url = python:\${confdir}/package:dburl
   > EOF
   $ $NOMAD info
   <Repository: .>:
@@ -75,7 +75,7 @@ URL from a file::
   $ cat > nomad.ini <<EOF
   > [nomad]
   > engine = sqla
-  > url-file = url
+  > url = file:url
   > EOF
   $ $NOMAD info
   <Repository: .>:
@@ -85,43 +85,42 @@ URL from a file::
 
 URL from a command::
 
-  $ echo 'sqlite:///test-file.db' > url
+  $ echo 'sqlite:///test-cmd.db' > url
   $ cat > nomad.ini <<EOF
   > [nomad]
   > engine = sqla
-  > url-command = cat url
+  > url = command:"cat url"
   > EOF
   $ $NOMAD info
   <Repository: .>:
-    <SAEngine: sqlite:///test-file.db>
+    <SAEngine: sqlite:///test-cmd.db>
     Uninitialized repository
 
 URL from JSON file::
 
-  $ echo '{"db": [{"url": "sqlite:///test-file.db"}]}' > url.json
-  $ cat > nomad.init <<EOF
+  $ echo '{"db": [{"url": "sqlite:///test-json.db"}]}' > url.json
+  $ cat > nomad.ini <<EOF
   > [nomad]
   > engine = sqla
-  > url-json = url.json:db.0.url
+  > url = json:url.json:db.0.url
   > EOF
   $ $NOMAD info
   <Repository: .>:
-    <SAEngine: sqlite:///test-file.db>
+    <SAEngine: sqlite:///test-json.db>
     Uninitialized repository
 
 URL from INI file::
 
-  $ echo '[db]\nurl = sqlite:///test-file.db' > url.ini
-  $ cat > nomad.init <<EOF
+  $ echo '[db]\nurl = sqlite:///test-ini.db' > url.ini
+  $ cat > nomad.ini <<EOF
   > [nomad]
   > engine = sqla
-  > url-ini = url.ini:db.url
+  > url = ini:url.ini:db.url
   > EOF
   $ $NOMAD info
   <Repository: .>:
-    <SAEngine: sqlite:///test-file.db>
+    <SAEngine: sqlite:///test-ini.db>
     Uninitialized repository
-
 
 Nothing defined::
 
@@ -129,3 +128,21 @@ Nothing defined::
   $ $NOMAD info
   \x1b[31mError: database url in <Repository: .> is not found\x1b[0m (esc)
   [1]
+
+MultiURL::
+
+  $ rm url.ini
+  $ cat > nomad.ini <<EOF
+  > [nomad]
+  > engine = sqla
+  > url = ini:url.ini:db.url sqlite:///test.db
+  > EOF
+  $ $NOMAD info
+  <Repository: .>:
+    <SAEngine: sqlite:///test.db>
+    Uninitialized repository
+  $ echo '[db]\nurl = sqlite:///test-multi.db' > url.ini
+  $ $NOMAD info
+  <Repository: .>:
+    <SAEngine: sqlite:///test-multi.db>
+    Uninitialized repository
