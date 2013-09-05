@@ -129,11 +129,12 @@ An example::
 Main properties
 ---------------
 
-- There are no downgrades - nobody ever tests them, they are rarely necessary
+- There are no downgrades - nobody ever tests them, and they are rarely
+  necessary. Just write an upgrade if you need to cancel something.
 - You can write migration in whatever language you want, nomad only helps you
-  track applied migrations and dependencies
+  track applied migrations and dependencies.
 - ``.sql`` is treated differently and executed against database, configured in
-  ``nomad.ini``
+  ``nomad.ini``.
 - Only ``.sql`` and executable files (sorry, Windows! - I though am eager to
   ideas how to support it) are executed. You can put READMEs, pieces of
   documentation, whatever you want alongside your migrations.
