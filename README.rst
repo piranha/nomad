@@ -129,13 +129,14 @@ An example::
 Main properties
 ---------------
 
-- There is no downgrades - nobody ever tests them, they are rarely necessary
-- You can write migration in whatever language you want, tool only helps you
+- There are no downgrades - nobody ever tests them, they are rarely necessary
+- You can write migration in whatever language you want, nomad only helps you
   track applied migrations and dependencies
 - ``.sql`` is treated differently and executed against database, configured in
   ``nomad.ini``
-- Only ``.sql`` and executable files (sorry, Windows!) are executed. You can put
-  READMEs, pieces of documentation, whatever you want alongside your migrations.
+- Only ``.sql`` and executable files (sorry, Windows! - I though am eager to
+  ideas how to support it) are executed. You can put READMEs, pieces of
+  documentation, whatever you want alongside your migrations.
 - Name matters - everything is executed in order. Order is determined by using
   human sort (so that ``x-1.sql`` is earlier than ``x-10.sql``, you can always
   check sorting with ``ls --sort=version``).
