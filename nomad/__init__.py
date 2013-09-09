@@ -100,11 +100,18 @@ def create(name,
 
 @app.command()
 def apply(all=('a', False, 'apply all available migrations'),
-       *names,
-       **opts):
+          init=('', False, 'init if not initialized yet'),
+          *names,
+          **opts):
     '''Apply migration and all of it dependencies
     '''
     repo = opts['repo']
+    if init:
+        try:
+            repo.init_db()
+        except DBError:
+            pass
+
     if names:
         migrations = map(repo.get, names)
     elif all:
