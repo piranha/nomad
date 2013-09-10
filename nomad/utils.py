@@ -132,6 +132,17 @@ def get_ini(path):
         raise KeyError('%s not found in %s' % (path, fn))
 
 
+def get_yaml(path):
+    try:
+        import yaml
+    except ImportError:
+        abort('Please, install PyYAML to parse YAML config.')
+    fn, path = path.split(':')
+    obj = yaml.load(open(fn))
+    path = map(lambda x: int(x) if x.isdigit() else x, path.split('.'))
+    return reduce(lambda x, y: x[y], path, obj)
+
+
 URLTYPES = {
     'python': get_python,
     'py': get_python,
@@ -140,6 +151,7 @@ URLTYPES = {
     'cmd': get_command,
     'json': get_json,
     'ini': get_ini,
+    'yaml': get_yaml,
     }
 
 
