@@ -122,6 +122,19 @@ URL from INI file::
     <SAEngine: sqlite:///test-ini.db>
     Uninitialized repository
 
+URL from YAML file::
+
+  $ echo 'db:\n    - url: sqlite:///test-yaml.db' > url.yaml
+  $ cat > nomad.ini <<EOF
+  > [nomad]
+  > engine = sqla
+  > url = yaml:url.yaml:db.0.url
+  > EOF
+  $ $NOMAD info
+  <Repository: .>:
+    <SAEngine: sqlite:///test-yaml.db>
+    Uninitialized repository
+
 Nothing defined::
 
   $ echo '[nomad]\nengine=sqla' > nomad.ini
