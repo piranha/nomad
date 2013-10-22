@@ -146,7 +146,7 @@ class Migration(object):
 
         print 'applying migration %s:' % self
 
-        for fn in os.listdir(self.path):
+        for fn in sorted(os.listdir(self.path), key=humankey):
             if fn == 'migration.ini':
                 continue
             path = op.join(self.path, fn)
