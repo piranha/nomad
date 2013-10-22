@@ -69,10 +69,6 @@ def humankey(fn):
   return [int(s) if s.isdigit() else s for s in NUM_RE.split(fn)], ext
 
 
-def humansort(l):
-    return list(sorted(l, key=humankey))
-
-
 def loadpath(path):
     modname = 'nomad_url_%s' % path.replace('/', '_').replace('.', '_')
     path = op.expanduser(op.expandvars(path))

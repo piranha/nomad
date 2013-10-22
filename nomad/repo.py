@@ -5,7 +5,7 @@ from subprocess import call
 from functools import wraps
 
 from nomad.utils import (cachedproperty, geturl, NomadError, NomadIniNotFound,
-                         clean_sql, abort)
+                         clean_sql, abort, humankey)
 
 
 def tx(getrepo):
@@ -80,7 +80,7 @@ class Repository(object):
     def available(self):
         migrations = [self.get(x) for x in os.listdir(self.path) if
                       op.isdir(op.join(self.path, x))]
-        return list(sorted(migrations))
+        return list(sorted(migrations, key=lambda m: humankey(m.name)))
 
     @cachedproperty
     def appliednames(self):

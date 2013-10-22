@@ -53,3 +53,12 @@ Dependencies::
     sql migration applied: up.sql
   applying migration 2-third:
     sql migration applied: up.sql
+
+
+Natural sorting works::
+
+  $ $NOMAD create 3-fourth
+  $ $NOMAD create 10-eleventh
+  $ $NOMAD ls
+  \x1b[32m3-fourth\x1b[0m (esc)
+  \x1b[32m10-eleventh\x1b[0m (esc)
