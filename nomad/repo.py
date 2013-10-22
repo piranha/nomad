@@ -80,7 +80,7 @@ class Repository(object):
     def available(self):
         migrations = [self.get(x) for x in os.listdir(self.path) if
                       op.isdir(op.join(self.path, x))]
-        return list(sorted(migrations, key=lambda m: humankey(m.name)))
+        return list(sorted(migrations))
 
     @cachedproperty
     def appliednames(self):
@@ -115,9 +115,8 @@ class Migration(object):
                 'dir': op.abspath(op.join(repo.path, name))
             })
         self.conf.read([op.join(repo.path, name, 'migration.ini')])
-        self._deps = [x.strip() for x in self.conf.get('nomad', 'dependencies',
-                                                       fallback='').split(',')
-                      if x.strip()]
+        deps = self.conf.get('nomad', 'dependencies', fallback='').split(',')
+        self._deps = [x.strip() for x in deps if x.strip()]
         self.applied = applied
 
     def __repr__(self):
@@ -128,7 +127,7 @@ class Migration(object):
 
     def __lt__(self, other):
         if isinstance(other, Migration) and self.repo == other.repo:
-            return self.name < other.name
+            return humankey(self.name) < humankey(other.name)
         raise TypeError('Migrations can be compared only with other migrations')
 
     @property
