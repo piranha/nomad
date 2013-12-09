@@ -10,6 +10,9 @@ from nomad.engine import DBError
 from nomad.utils import abort, NomadError, NomadIniNotFound
 
 
+__version__ = '1.5'
+
+
 GLOBAL = [
     ('c', 'config', 'nomad.ini', 'path to config file'),
     ('D', 'define', {}, 'override config values'),
@@ -139,6 +142,13 @@ def info(**opts):
         print '  %s unapplied' % (len(repo.available) - len(repo.applied))
     except DBError:
         print '  Uninitialized repository'
+
+
+@app.command()
+def version():
+    '''Show app version
+    '''
+    print 'Nomad v%s' % __version__
 
 
 if __name__ == '__main__':

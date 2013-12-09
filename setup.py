@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys, os
+import sys, os, re
 from setuptools import setup, find_packages
 
 PY3 = sys.version_info[0] >= 3
@@ -19,13 +19,18 @@ if not PY3:
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+def find_version():
+    val, = re.findall(r"__version__ = '([^']+)'",
+                      read('nomad/__init__.py'))
+    return val
+
 
 config = dict(
     name = 'nomad',
     description = 'simple sql migration tool to save you from becoming mad',
     long_description = read('README.rst'),
     license = 'BSD',
-    version = '1.4',
+    version = find_version(),
     author = 'Alexander Solovyov',
     author_email = 'alexander@solovyov.net',
     url = 'http://github.com/piranha/nomad/',
