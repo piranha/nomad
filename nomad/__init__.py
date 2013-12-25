@@ -27,7 +27,7 @@ EXAMPLE_INI = '''
 
 
 def getconfig(func):
-    if func.__name__.startswith('help'):
+    if func.__name__.startswith('help') or func.__name__ in ('version',):
         return func
     def inner(*args, **kwargs):
         try:
@@ -145,7 +145,7 @@ def info(**opts):
 
 
 @app.command()
-def version():
+def version(**opts):
     '''Show app version
     '''
     print 'Nomad v%s' % __version__
