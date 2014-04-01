@@ -114,6 +114,8 @@ The easiest one is simply an url (like in config example). The others are:
   url
 - ``json:<path-to-file>:key.0.key`` - path to file with JSON and then path
   to a connection url within JSON object
+- ``yaml:<path-to-file>:key.0.key`` - path to file with YAML and then path
+  to a connection url within YAML object
 - ``ini:<path-to-file>:<section.key>`` - path to INI file (parsed by
   configparser with extended interpolation) and then path to a connection url
   within this file
