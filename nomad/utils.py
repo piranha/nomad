@@ -139,6 +139,10 @@ def get_yaml(path):
     return reduce(lambda x, y: x[y], path, obj)
 
 
+def get_env(key):
+    return os.environ[key]
+
+
 URLTYPES = {
     'python': get_python,
     'py': get_python,
@@ -148,6 +152,7 @@ URLTYPES = {
     'json': get_json,
     'ini': get_ini,
     'yaml': get_yaml,
+    'env': get_env,
     }
 
 
@@ -156,7 +161,9 @@ def geturl(urlspec):
         bits = url.split(':', 1)
         if len(bits) > 1 and bits[0] in URLTYPES:
             try:
-                return URLTYPES[bits[0]](bits[1])
+                url = URLTYPES[bits[0]](bits[1])
+                if url:
+                    return url
             except (IOError, OSError, KeyError):
                 pass
         else:

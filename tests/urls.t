@@ -159,3 +159,15 @@ MultiURL::
   <Repository: .>:
     <SAEngine: sqlite:///test-multi.db>
     Uninitialized repository
+
+Environment variable::
+
+  $ cat > nomad.ini <<EOF
+  > [nomad]
+  > engine = sqla
+  > url = env:DATABASE_URL
+  > EOF
+  $ DATABASE_URL=sqlite:///test.db $NOMAD info
+  <Repository: .>:
+    <SAEngine: sqlite:///test.db>
+    Uninitialized repository

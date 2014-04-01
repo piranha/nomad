@@ -108,10 +108,10 @@ obtain database connection url.
 The easiest one is simply an url (like in config example). The others are:
 
 - ``file:<path-to-file>`` - a path to file containing connection url
+- ``env:<var-name>`` - an environment variable
 - ``py:<python.mod>:<variable.name>`` - a Python path to a module,
   containing a variable with connection url
-- ``cmd:<cmd-to-execute>`` - command line to execute to get connection
-  url
+- ``cmd:<cmd-to-execute>`` - command to execute to get connection url
 - ``json:<path-to-file>:key.0.key`` - path to file with JSON and then path
   to a connection url within JSON object
 - ``yaml:<path-to-file>:key.0.key`` - path to file with YAML and then path
@@ -128,8 +128,8 @@ An example::
     json:${confdir}/../settings.json:db.url
     sqlite:///${confdir}/../local.db
 
-Main properties
----------------
+Main ideas
+----------
 
 - There are no downgrades - nobody ever tests them, and they are rarely
   necessary. Just write an upgrade if you need to cancel something.
@@ -138,7 +138,7 @@ Main properties
 - ``.sql`` is treated differently and executed against database, configured in
   ``nomad.ini``.
 - Only ``.sql`` and executable files (sorry, Windows! - I though am eager to
-  ideas how to support it) are executed. You can put READMEs, pieces of
+  hear for ideas how to support it) are executed. You can put READMEs, pieces of
   documentation, whatever you want alongside your migrations.
 - Name matters - everything is executed in order. Order is determined by using
   human sort (so that ``x-1.sql`` is earlier than ``x-10.sql``, you can always
