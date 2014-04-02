@@ -137,8 +137,8 @@ Main ideas
   track applied migrations and dependencies.
 - ``.sql`` is treated differently and executed against database, configured in
   ``nomad.ini``.
-- Only ``.sql`` and executable files (sorry, Windows! - I though am eager to
-  hear for ideas how to support it) are executed. You can put READMEs, pieces of
+- Only ``.sql`` and executable files (sorry, Windows! - though I am eager to
+  hear ideas how to support it) are executed. You can put READMEs, pieces of
   documentation, whatever you want alongside your migrations.
 - Name matters - everything is executed in order. Order is determined by using
   human sort (so that ``x-1.sql`` is earlier than ``x-10.sql``, you can always
