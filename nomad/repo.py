@@ -106,7 +106,7 @@ class Migration(object):
         self.repo = repo
         self.name = name
         if not op.exists(op.join(repo.path, name)) and not force:
-            raise NomadError('migration not found')
+            raise NomadError('migration not found: %s' % name)
         self.conf = ConfigParser(
             interpolation=ExtendedInterpolation(),
             defaults={
