@@ -10,7 +10,7 @@ from nomad.engine import DBError
 from nomad.utils import abort, NomadError, NomadIniNotFound
 
 
-__version__ = '1.6'
+__version__ = '1.7'
 
 
 GLOBAL = [
@@ -104,9 +104,15 @@ def create(name,
 @app.command()
 def apply(all=('a', False, 'apply all available migrations'),
           init=('', False, 'init if not initialized yet'),
+          env=('e', [], 'list of additional environment variables'),
           *names,
           **opts):
     '''Apply migration and all of it dependencies
+
+    You can pass additional environment variables to your migrations scripts
+    using option `-e` (in addition to NOMAD_DBURL, which is passed by default):
+
+        nomad apply -e ONE=one -e TWO=two -a
     '''
     repo = opts['repo']
     if init:
@@ -122,12 +128,15 @@ def apply(all=('a', False, 'apply all available migrations'),
     else:
         abort('Supply names of migrations to apply')
 
+    if env:
+        env = dict(x.split('=', 1) for x in env)
+
     for m in migrations:
         if m in repo.applied:
             abort('migration %s is already applied' % m)
     for m in migrations:
         if not m.applied:
-            m.apply()
+            m.apply(env=env)
 
 
 @app.command()

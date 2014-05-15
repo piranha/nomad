@@ -59,10 +59,10 @@ class Repository(object):
         except ImportError, e:
             raise NomadError('cannot use engine %s: %s' % (enginepath, e))
         try:
-            url = geturl(self.conf['nomad']['url'])
+            self.url = geturl(self.conf['nomad']['url'])
         except KeyError:
             abort('database url in %s is not found' % self)
-        self.engine = getattr(enginemod, 'engine')(url)
+        self.engine = getattr(enginemod, 'engine')(self.url)
 
     def __repr__(self):
         return '<%s: %s>' % (type(self).__name__, self.path)
@@ -139,7 +139,7 @@ class Migration(object):
         return map(self.repo.get, self._deps)
 
     @tx(lambda self: self.repo)
-    def apply(self):
+    def apply(self, env=None):
         for dep in self.dependencies:
             if not dep.applied:
                 dep.apply()
@@ -155,7 +155,10 @@ class Migration(object):
                     self.repo.engine.query(clean_sql(f.read()))
                 print '  sql migration applied: %s' % fn
             elif os.access(path, os.X_OK):
-                call(path)
+                callenv = dict(os.environ, NOMAD_DBURL=self.repo.url)
+                if env:
+                    callenv.update(env)
+                call(path, env=callenv)
                 print '  script migration applied: %s' % fn
             else:
                 print '  skipping file: %s' % fn
