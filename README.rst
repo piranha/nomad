@@ -10,7 +10,9 @@ whatever you are using to access your database. It uses simple SQL scripts to
 migrate and can run pre- and post-processing routines written in any language
 (Python, Ruby or whatever do you use for your application).
 
-.. image:: https://travis-ci.org/piranha/nomad.png
+Tests status: |travis|
+
+.. |travis| image:: https://travis-ci.org/piranha/nomad.png
    :target: https://travis-ci.org/piranha/nomad
 
 .. image:: https://github.com/piranha/nomad/raw/master/docs/nomad.jpg
