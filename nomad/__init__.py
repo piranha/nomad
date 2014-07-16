@@ -81,10 +81,7 @@ def create(name,
     '''Create new migration
     '''
     repo = opts['repo']
-    try:
-        deps = map(repo.get, dependencies)
-    except NomadError, e:
-        abort(e)
+    deps = map(repo.get, dependencies)
 
     path = op.join(repo.path, name)
     try:
