@@ -6,6 +6,7 @@ from functools import wraps
 
 from nomad.utils import (cachedproperty, geturl, NomadError, NomadIniNotFound,
                          clean_sql, abort, humankey)
+from nomad.engine import DBError
 
 
 def tx(getrepo):
@@ -147,11 +148,13 @@ class Migration(object):
                 dep.apply()
 
         print 'applying migration %s:' % self
+        filenames = sorted(os.listdir(self.path), key=humankey)
 
-        for fn in sorted(os.listdir(self.path), key=humankey):
+        for fn in filenames:
             if fn == 'migration.ini':
                 continue
             path = op.join(self.path, fn)
+
             if fn.endswith('.sql'):
                 with open(path) as f:
                     self.repo.engine.query(clean_sql(f.read()))
@@ -160,7 +163,9 @@ class Migration(object):
                 callenv = dict(os.environ, NOMAD_DBURL=self.repo.url)
                 if env:
                     callenv.update(env)
-                call(path, env=callenv)
+                retcode = call(path, env=callenv)
+                if retcode:
+                    raise DBError('script failed: %s' % fn)
                 print '  script migration applied: %s' % fn
             else:
                 print '  skipping file: %s' % fn

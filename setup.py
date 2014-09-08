@@ -3,16 +3,16 @@
 import sys, os, re
 from setuptools import setup, find_packages
 
-PY3 = sys.version_info[0] >= 3
-
-if PY3:
-    from distutils.command.build_py import build_py_2to3 as build_py
-else:
-    from distutils.command.build_py import build_py
-
 
 DEPS = ['opster>=4.0', 'termcolor']
-if not PY3:
+extra = {}
+
+if sys.version_info[0] >= 3:
+    extra.update(dict(
+        use_2to3=True,
+        convert_2to3_doctests=['nomad/utils.py'],
+    ))
+else:
     DEPS.append('configparser')
 
 
@@ -49,8 +49,7 @@ config = dict(
     packages = find_packages(),
     entry_points = {'console_scripts': ['nomad=nomad:app.dispatch']},
     platforms='any',
-    cmdclass={'build_py': build_py}
-    )
+    **extra)
 
 if __name__ == '__main__':
     setup(**config)

@@ -133,7 +133,10 @@ def apply(all=('a', False, 'apply all available migrations'),
             abort('migration %s is already applied' % m)
     for m in migrations:
         if not m.applied:
-            m.apply(env=env)
+            try:
+                m.apply(env=env)
+            except DBError, e:
+                abort('cannot apply migration %s: %s' % (m, e))
 
 
 @app.command()
@@ -152,7 +155,7 @@ def info(**opts):
 
 @app.command()
 def version(**opts):
-    '''Show app version
+    '''Show nomad version
     '''
     print 'Nomad v%s' % __version__
 
