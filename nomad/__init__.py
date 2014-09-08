@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os, os.path as op, sys
+from datetime import date
 
 from opster import Dispatcher
 from termcolor import cprint, colored
@@ -10,7 +11,7 @@ from nomad.engine import DBError
 from nomad.utils import abort, NomadError, NomadIniNotFound
 
 
-__version__ = '1.7'
+__version__ = '1.8'
 
 
 GLOBAL = [
@@ -77,11 +78,15 @@ def list_(all=('a', False, 'show all migrations (default: only non-applied)'),
 @app.command()
 def create(name,
            dependencies=('d', [], 'migration dependencies'),
+           prefix_date=('p', False, 'prefix migration name with date'),
            **opts):
     '''Create new migration
     '''
     repo = opts['repo']
     deps = map(repo.get, dependencies)
+
+    if prefix_date:
+        name = date.today().strftime('%Y%m%d-') + name
 
     path = op.join(repo.path, name)
     try:

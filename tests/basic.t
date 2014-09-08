@@ -54,7 +54,6 @@ Dependencies::
   applying migration 2-third:
     sql migration applied: up.sql
 
-
 Natural sorting works::
 
   $ $NOMAD create 3-fourth
