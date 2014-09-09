@@ -50,7 +50,10 @@ app = Dispatcher(globaloptions=GLOBAL, middleware=getconfig)
 def init(**opts):
     '''Initialize database migration management
     '''
-    opts['repo'].init_db()
+    try:
+        opts['repo'].init_db()
+    except DBError, e:
+        abort(e)
     print 'Versioning table initialized successfully'
 
 

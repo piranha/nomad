@@ -130,7 +130,7 @@ class DBEngine(BaseEngine):
     def connect(self):
         p = urlparse.urlparse(self.url)
         if p.scheme not in CONNECTORS:
-            raise DBError('scheme %s not supported' % p.scheme)
+            raise DBError('scheme "%s" not supported' % p.scheme)
         return CONNECTORS[p.scheme](p)
 
     def query(self, statement, *args):
