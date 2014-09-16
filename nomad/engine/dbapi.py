@@ -123,7 +123,8 @@ class Pgsql(Connection):
             return []
 
 
-CONNECTORS = {'sqlite': Sqlite, 'mysql': Mysql, 'pgsql': Pgsql}
+CONNECTORS = {'sqlite': Sqlite, 'mysql': Mysql,
+              'pgsql': Pgsql, 'postgresql': Pgsql, 'postgres': Pgsql}
 
 
 class DBEngine(BaseEngine):
