@@ -110,7 +110,7 @@ obtain database connection url.
 The easiest one is simply an url (like in config example). The others are:
 
 - ``file:<path-to-file>`` - a path to file containing connection url
-- ``env:<var-name>`` - an environment variable
+- ``env:<var-name>`` - an environment variable (do not prefix with `$`)
 - ``py:<python.mod>:<variable.name>`` - a Python path to a module,
   containing a variable with connection url
 - ``cmd:<cmd-to-execute>`` - command to execute to get connection url
