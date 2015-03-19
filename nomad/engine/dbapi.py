@@ -1,4 +1,5 @@
 import urlparse
+import urllib
 
 from nomad.engine import BaseEngine, DBError
 
@@ -11,6 +12,8 @@ def path2dict(p, **renames):
         value = getattr(p, k, None)
         if not value:
             continue
+        if isinstance(value, str):
+            value = urllib.unquote(value)
         if k == 'path':
             value = value.lstrip('/')
         result[renames.get(k, k)] = value
