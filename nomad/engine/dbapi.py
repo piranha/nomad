@@ -23,8 +23,10 @@ def path2dict(p, **renames):
 class Connection(object):
     exc = None
 
-    @property
-    def connection(self):
+    def __init__(self):
+        self.connection = self.connect()
+
+    def connect(self):
         raise NotImplementedError()
 
     def prepare(self, statement):
@@ -64,12 +66,10 @@ class Sqlite(Connection):
         import sqlite3
         self.module = sqlite3
         self.exc = sqlite3.Error
+        Connection.__init__(self)
 
-    @property
-    def connection(self):
-        if not self._conn:
-            self._conn = self.module.connect(self.path)
-        return self._conn
+    def connect(self):
+        return self.module.connect(self.path)
 
 
 class Mysql(Connection):
@@ -80,12 +80,10 @@ class Mysql(Connection):
         import MySQLdb
         self.module = MySQLdb
         self.exc = MySQLdb.MySQLError
+        Connection.__init__(self)
 
-    @property
-    def connection(self):
-        if not self._conn:
-            self._conn = self.module.connect(**self.parameters)
-        return self._conn
+    def connect(self):
+        return self.module.connect(**self.parameters)
 
     def prepare(self, statement):
         return statement.replace('?', '%s')
@@ -107,12 +105,13 @@ class Pgsql(Connection):
         import psycopg2
         self.module = psycopg2
         self.exc = psycopg2.Error
+        Connection.__init__(self)
 
-    @property
-    def connection(self):
-        if not self._conn:
-            self._conn = self.module.connect(**self.parameters)
-        return self._conn
+    def connect(self):
+        try:
+            return self.module.connect(**self.parameters)
+        except self.module.OperationalError, e:
+            raise DBError('psycopg2: %s' % e)
 
     def prepare(self, statement):
         return statement.replace('?', '%s')

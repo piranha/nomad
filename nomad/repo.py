@@ -64,6 +64,10 @@ class Repository(object):
         except KeyError:
             abort('database url in %s is not found' % self)
         self.engine = getattr(enginemod, 'engine')(self.url)
+        try:
+            self.engine.connection
+        except DBError, e:
+            abort(e)
 
     def __repr__(self):
         return '<%s: %s>' % (type(self).__name__, self.path)
