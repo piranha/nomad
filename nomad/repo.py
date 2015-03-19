@@ -141,13 +141,9 @@ class Migration(object):
     def dependencies(self):
         return map(self.repo.get, self._deps)
 
-    @tx(lambda self: self.repo)
-    def apply(self, env=None):
-        for dep in self.dependencies:
-            if not dep.applied:
-                dep.apply()
-
-        print 'applying migration %s:' % self
+    def _apply(self, env=None):
+        '''The real work for applying a migration
+        '''
         filenames = sorted(os.listdir(self.path), key=humankey)
 
         for fn in filenames:
@@ -159,6 +155,7 @@ class Migration(object):
                 with open(path) as f:
                     self.repo.engine.query(clean_sql(f.read()))
                 print '  sql migration applied: %s' % fn
+
             elif os.access(path, os.X_OK):
                 callenv = dict(os.environ, NOMAD_DBURL=self.repo.url)
                 if env:
@@ -167,8 +164,23 @@ class Migration(object):
                 if retcode:
                     raise DBError('script failed: %s' % fn)
                 print '  script migration applied: %s' % fn
+
             else:
                 print '  skipping file: %s' % fn
+
+    @tx(lambda self: self.repo)
+    def apply(self, env=None, fake=False):
+        '''Apply a migration
+        '''
+        for dep in self.dependencies:
+            if not dep.applied:
+                dep.apply(env=env, fake=fake)
+
+        if not fake:
+            print 'applying migration %s:' % self
+            self._apply(env=env)
+        else:
+            print 'applying "fake" migration %s' % self
 
         self.repo.engine.query('INSERT INTO %s (name, date) VALUES (?, ?)'
                                % self.repo.conf['nomad']['table'],

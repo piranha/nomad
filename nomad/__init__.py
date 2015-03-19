@@ -110,6 +110,7 @@ def create(name,
 def apply(all=('a', False, 'apply all available migrations'),
           init=('', False, 'init if not initialized yet'),
           env=('e', [], 'list of additional environment variables'),
+          fake=('', False, 'record migration as applied, but do not do anything'),
           *names,
           **opts):
     '''Apply migration and all of it dependencies
@@ -137,14 +138,14 @@ def apply(all=('a', False, 'apply all available migrations'),
         env = dict(x.split('=', 1) for x in env)
 
     for m in migrations:
-        if m in repo.applied:
+        if m.applied:
             abort('migration %s is already applied' % m)
+
     for m in migrations:
-        if not m.applied:
-            try:
-                m.apply(env=env)
-            except DBError, e:
-                abort('cannot apply migration %s: %s' % (m, e))
+        try:
+            m.apply(env=env, fake=fake)
+        except DBError, e:
+            abort('cannot apply migration %s: %s' % (m, e))
 
 
 @app.command()
