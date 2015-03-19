@@ -12,8 +12,8 @@
 1.9
 ---
 
-- Postgresql urls can now use any of `pgsql://`, `postgresql://` and
-   `postgres://`
+- Postgresql urls can now use any of ``pgsql://``, ``postgresql://`` and
+   ``postgres://``
 - Improvements in error reporting
 
 1.8
