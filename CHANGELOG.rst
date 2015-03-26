@@ -2,6 +2,11 @@
  Nomad Changelog
 =================
 
+1.11
+----
+
+ - Do not abort on migrations not on disk
+
 1.10
 ----
 

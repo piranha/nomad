@@ -11,7 +11,7 @@ from nomad.engine import DBError
 from nomad.utils import abort, NomadError, NomadIniNotFound
 
 
-__version__ = '1.10'
+__version__ = '1.11'
 
 
 GLOBAL = [
@@ -63,8 +63,12 @@ def list_(all=('a', False, 'show all migrations (default: only non-applied)'),
     '''List migrations
     '''
     repo = opts['repo']
-    for m in repo.available:
-        if m in repo.applied:
+    all_migrations = repo.available + [m for m in repo.applied
+                                       if m not in repo.available]
+    for m in all_migrations:
+        if m not in repo.available:
+            print colored(m, 'red') + ' (not on disk)'
+        elif m in repo.applied:
             if all:
                 cprint(m, 'magenta')
         else:

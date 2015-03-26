@@ -107,13 +107,9 @@ class Migration(object):
             cls.SINGLETONS[key] = object.__new__(cls)
         return cls.SINGLETONS[key]
 
-    def __init__(self, repo, name, force=False, applied=False):
+    def __init__(self, repo, name, applied=False):
         self.repo = repo
         self.name = name
-        if not op.exists(op.join(repo.path, name)) and not force:
-            raise NomadError(
-                'migration exists in database, but not found on the disk: %s'
-                % name)
         self.conf = ConfigParser(
             interpolation=ExtendedInterpolation(),
             defaults={
@@ -124,7 +120,9 @@ class Migration(object):
         self.conf.read([op.join(repo.path, name, 'migration.ini')])
         deps = self.conf.get('nomad', 'dependencies', fallback='').split(',')
         self._deps = [x.strip() for x in deps if x.strip()]
+
         self.applied = applied
+        self.exists = op.exists(op.join(repo.path, name))
 
     def __repr__(self):
         return '<%s: %s>' % (type(self).__name__, str(self))
