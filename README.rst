@@ -63,7 +63,7 @@ Nomad should report which migrations it applied successfully, but you can check
 status of that with ``nomad ls -a`` (or ``nomad ls`` to see only unapplied
 migrations).
 
-I guess it's time to create new migration:
+I guess it's time to create new migration::
 
   $ nomad create 1-next -d 0-initial
 
