@@ -73,6 +73,8 @@ class Repository(object):
         return '<%s: %s>' % (type(self).__name__, self.path)
 
     def get(self, name):
+        if name.endswith('/'):
+            name = name[:-1]
         applied = name in self.appliednames
         return Migration(self, name, applied=applied)
 

@@ -61,3 +61,12 @@ Natural sorting works::
   $ $NOMAD ls
   \x1b[32m3-fourth\x1b[0m (esc)
   \x1b[32m10-eleventh\x1b[0m (esc)
+
+No problems with trailing slash that can easily occur from autocomplete::
+
+  $ $NOMAD apply 3-fourth/
+  applying migration 3-fourth:
+    sql migration applied: up.sql
+  $ $NOMAD apply 3-fourth
+  \x1b[31mError: migration 3-fourth is already applied\x1b[0m (esc)
+  [1]
