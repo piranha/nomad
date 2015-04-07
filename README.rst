@@ -96,8 +96,10 @@ Nomad reads configuration from ``nomad.ini``, here is an example::
 Possible configuration options:
 
 - ``engine`` (required) - SQL engine to use, possible options:
-    - ``sqla`` - use SQLAlchemy as an adapter, supports everything SQLAlchemy supports
-    - ``dbapi`` - use regular DB API, supports ``sqlite``, ``mysql`` and ``pgsql``
+
+  - ``sqla`` - use SQLAlchemy as an adapter, supports everything SQLAlchemy supports
+  - ``dbapi`` - use regular DB API, supports ``sqlite``, ``mysql`` and ``pgsql``
+
 - ``url`` (required) - URL to database, takes multiple options, see format below
 - ``path`` - path to migrations (default: directory with ``nomad.ini``)
 
