@@ -15,8 +15,6 @@ Tests status: |travis|, `changelog <https://github.com/piranha/nomad/blob/master
 .. |travis| image:: https://travis-ci.org/piranha/nomad.png
    :target: https://travis-ci.org/piranha/nomad
 
-.. image:: https://github.com/piranha/nomad/raw/master/docs/nomad.jpg
-
 .. begin-writeup
 
 Layout
@@ -43,8 +41,8 @@ Your directory tree thus will look like this::
 Nomad uses table called ``nomad`` to track what was applied already. It's just a
 list of applied migrations and dates when they were applied.
 
-Usage
------
+Interface
+---------
 
 To start working, create ``nomad.ini``, and initialize your database (I assume
 it already exists)::
@@ -68,9 +66,23 @@ I guess it's time to create new migration::
   $ nomad create 1-next -d 0-initial
 
 ``-d 0-initial`` means you want your ``1-next`` to depend on ``0-initial``. This
-means nomad will never apply ``1-next`` without applying ``0-initial``
+means Nomad will never apply ``1-next`` without applying ``0-initial``
 first. You usually want to depend on migrations which created tables you're
 going to alter, or just to make it easier - on the latest available migration.
+
+Usage
+-----
+
+Idea is that you put your migrations in ``.sql`` files (name does not matter,
+and if there are few - they are executed in order), or in some executable
+file. It seems that first case is self-explanatory - you just put SQL commands
+you need to execute there and they will be executed.
+
+In second case it's your job to do whatever is necessary to migrate your data,
+starting with establishing connection. To facilitate this, Nomad will pass
+everything you define in `Configuration`_ as environment variables, prefixed
+with ``NOMAD_``, so at least you will get ``NOMAD_ENGINE`` and ``NOMAD_URL`` -
+feel free to add more configuration there.
 
 Configuration
 -------------
@@ -84,8 +96,8 @@ Nomad reads configuration from ``nomad.ini``, here is an example::
 Possible configuration options:
 
 - ``engine`` (required) - SQL engine to use, possible options:
-  - ``sqla`` - use SQLAlchemy as an adapter, supports everything SQLAlchemy supports
-  - ``dbapi`` - use regular DB API, supports ``sqlite``, ``mysql`` and ``pgsql``
+    - ``sqla`` - use SQLAlchemy as an adapter, supports everything SQLAlchemy supports
+    - ``dbapi`` - use regular DB API, supports ``sqlite``, ``mysql`` and ``pgsql``
 - ``url`` (required) - URL to database, takes multiple options, see format below
 - ``path`` - path to migrations (default: directory with ``nomad.ini``)
 
@@ -94,7 +106,7 @@ single configuration option, ``nomad.dependencies``, defining which migration
 (or migrations) this one depends.
 
 Note that ini-files are parsed with extended interpolation (use it like
-``${var}`` or ``${section.var}``), two predefined variables are provided:
+``${var}`` or ``${section.var}``), few predefined variables are provided:
 
 - ``confpath`` - path to ``nomad.ini``
 - ``confdir`` - path to directory, containing ``nomad.ini``
@@ -104,7 +116,7 @@ URL format
 ~~~~~~~~~~
 
 Nomad can read connection url to database in a few various ways. ``nomad.url``
-configuration option is a space separated list of descriptions of how nomad can
+configuration option is a space separated list of descriptions of how Nomad can
 obtain database connection url.
 
 The easiest one is simply an url (like in config example). The others are:
@@ -135,7 +147,7 @@ Main ideas
 
 - There are no downgrades - nobody ever tests them, and they are rarely
   necessary. Just write an upgrade if you need to cancel something.
-- You can write migration in whatever language you want, nomad only helps you
+- You can write migration in whatever language you want, Nomad only helps you
   track applied migrations and dependencies.
 - ``.sql`` is treated differently and executed against database, configured in
   ``nomad.ini``.

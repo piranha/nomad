@@ -51,18 +51,21 @@ class Repository(object):
 
         try:
             enginepath = self.conf['nomad']['engine']
+            if not '.' in enginepath:
+                enginepath = 'nomad.engine.' + enginepath
         except KeyError:
             raise NomadError('nomad.engine is not defined in config file')
-        if not '.' in enginepath:
-            enginepath = 'nomad.engine.' + enginepath
+
         try:
             enginemod = __import__(enginepath, {}, {}, [''])
         except ImportError, e:
             raise NomadError('cannot use engine %s: %s' % (enginepath, e))
+
         try:
             self.url = geturl(self.conf['nomad']['url'])
         except KeyError:
             abort('database url in %s is not found' % self)
+
         self.engine = getattr(enginemod, 'engine')(self.url)
         try:
             self.engine.connection
@@ -98,6 +101,10 @@ class Repository(object):
     @property
     def applied(self):
         return [self.get(x) for x in self.appliednames]
+
+    def get_env(self):
+        return dict(('NOMAD_' + k.upper(), v)
+                    for k, v in self.conf['nomad'].items())
 
 
 class Migration(object):
@@ -161,7 +168,10 @@ class Migration(object):
                 print '  sql migration applied: %s' % fn
 
             elif os.access(path, os.X_OK):
-                callenv = dict(os.environ, NOMAD_DBURL=self.repo.url)
+                callenv = dict(os.environ,
+                               # for backward compatibility
+                               NOMAD_DBURL=self.repo.url,
+                               **self.repo.get_env())
                 if env:
                     callenv.update(env)
                 retcode = call(path, env=callenv)

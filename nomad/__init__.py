@@ -120,9 +120,11 @@ def apply(all=('a', False, 'apply all available migrations'),
     '''Apply migration and all of it dependencies
 
     You can pass additional environment variables to your migrations scripts
-    using option `-e` (in addition to NOMAD_DBURL, which is passed by default):
+    using option `-e` (in addition to `NOMAD_<confvar>`s, which are passed by
+    default):
 
         nomad apply -e ONE=one -e TWO=two -a
+
     '''
     repo = opts['repo']
     if init:
