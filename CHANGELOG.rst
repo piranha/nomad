@@ -2,6 +2,14 @@
  Nomad Changelog
 =================
 
+1.12
+----
+
+ - Handle trailing slashes (when you use shell completion and are lazy, you can
+   get them in DB)
+ - Pass all the configuration values from ``nomad.ini`` to executable migration
+   scripts
+
 1.11
 ----
 
