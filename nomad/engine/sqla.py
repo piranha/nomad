@@ -16,7 +16,7 @@ class SAEngine(BaseEngine):
         statement = self.prepare(statement)
         try:
             return self.connection.execute(statement, *args, **kwargs)
-        except exc.SQLAlchemyError, e:
+        except exc.SQLAlchemyError as e:
             raise DBError(str(e))
 
     begin = rollback = commit = lambda self: None

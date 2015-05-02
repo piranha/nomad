@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import os, os.path as op, sys
 from datetime import date
 
@@ -33,11 +35,12 @@ def getconfig(func):
     def inner(*args, **kwargs):
         try:
             repo = Repository(kwargs['config'], kwargs['define'])
-        except NomadIniNotFound, e:
-            sys.stderr.write("Create '%s' to use nomad, example:\n%s\n" %
-                             (e, EXAMPLE_INI))
+        except NomadIniNotFound as e:
+            print("Create '%s' to use nomad, example:\n%s\n" %
+                  (e, EXAMPLE_INI),
+                  file=sys.stderr)
             abort('config file not found')
-        except (IOError, NomadError), e:
+        except (IOError, NomadError) as e:
             abort(e)
 
         return func(repo=repo, *args, **kwargs)
@@ -52,9 +55,9 @@ def init(**opts):
     '''
     try:
         opts['repo'].init_db()
-    except DBError, e:
+    except DBError as e:
         abort(e)
-    print 'Versioning table initialized successfully'
+    print('Versioning table initialized successfully')
 
 
 @app.command(name='list', aliases=('ls',))
@@ -67,7 +70,7 @@ def list_(all=('a', False, 'show all migrations (default: only non-applied)'),
                                        if m not in repo.available]
     for m in all_migrations:
         if m not in repo.available:
-            print colored(m, 'red') + ' (not on disk)'
+            print(colored(m, 'red') + ' (not on disk)')
         elif m in repo.applied:
             if all:
                 cprint(m, 'magenta')
@@ -79,7 +82,7 @@ def list_(all=('a', False, 'show all migrations (default: only non-applied)'),
                     deps.append(dep)
             if deps:
                 out += ' (%s)' % ', '.join(map(str, deps))
-            print out
+            print(out)
 
 
 @app.command()
@@ -98,7 +101,7 @@ def create(name,
     path = op.join(repo.path, name)
     try:
         os.mkdir(path)
-    except OSError, e:
+    except OSError as e:
         if e.errno == 17:
             abort('directory %s already exists' % path)
         raise
@@ -134,7 +137,7 @@ def apply(all=('a', False, 'apply all available migrations'),
             pass
 
     if names:
-        migrations = map(repo.get, names)
+        migrations = [repo.get(name) for name in names]
     elif all:
         migrations = [x for x in repo.available if x not in repo.applied]
     else:
@@ -150,7 +153,7 @@ def apply(all=('a', False, 'apply all available migrations'),
     for m in migrations:
         try:
             m.apply(env=env, fake=fake)
-        except DBError, e:
+        except DBError as e:
             abort('cannot apply migration %s: %s' % (m, e))
 
 
@@ -159,20 +162,20 @@ def info(**opts):
     '''Show information about repository
     '''
     repo = opts['repo']
-    print '%s:' % repo
-    print '  %s' % repo.engine
+    print('%s:' % repo)
+    print('  %s' % repo.engine)
     try:
-        print '  %s applied' % len(repo.applied)
-        print '  %s unapplied' % (len(repo.available) - len(repo.applied))
+        print('  %s applied' % len(repo.applied))
+        print('  %s unapplied' % (len(repo.available) - len(repo.applied)))
     except DBError:
-        print '  Uninitialized repository'
+        print('  Uninitialized repository')
 
 
 @app.command()
 def version(**opts):
     '''Show nomad version
     '''
-    print 'Nomad v%s' % __version__
+    print('Nomad v%s' % __version__)
 
 
 if __name__ == '__main__':

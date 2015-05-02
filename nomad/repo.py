@@ -1,4 +1,6 @@
 import os, os.path as op
+import sys
+
 from datetime import datetime
 from configparser import ConfigParser, ExtendedInterpolation
 from subprocess import call
@@ -7,6 +9,12 @@ from functools import wraps
 from nomad.utils import (cachedproperty, geturl, NomadError, NomadIniNotFound,
                          clean_sql, abort, humankey)
 from nomad.engine import DBError
+
+
+def iteritems(data, **kwargs):
+    return (iter(data.items(**kwargs))
+            if sys.version_info[0] == 3
+            else data.iteritems(**kwargs))
 
 
 def tx(getrepo):
@@ -41,7 +49,7 @@ class Repository(object):
         if not self.conf.read([confpath]):
             raise NomadIniNotFound(confpath)
 
-        for k, v in (overrides or {}).iteritems():
+        for k, v in iteritems(overrides or {}):
             section, key = k.split('.')
             self.conf.set(section, key, v)
 
@@ -58,7 +66,7 @@ class Repository(object):
 
         try:
             enginemod = __import__(enginepath, {}, {}, [''])
-        except ImportError, e:
+        except ImportError as e:
             raise NomadError('cannot use engine %s: %s' % (enginepath, e))
 
         try:
@@ -69,7 +77,7 @@ class Repository(object):
         self.engine = getattr(enginemod, 'engine')(self.url)
         try:
             self.engine.connection
-        except DBError, e:
+        except DBError as e:
             abort(e)
 
     def __repr__(self):
@@ -165,7 +173,7 @@ class Migration(object):
             if fn.endswith('.sql'):
                 with open(path) as f:
                     self.repo.engine.query(clean_sql(f.read()))
-                print '  sql migration applied: %s' % fn
+                print('  sql migration applied: %s' % fn)
 
             elif os.access(path, os.X_OK):
                 callenv = dict(os.environ,
@@ -177,10 +185,10 @@ class Migration(object):
                 retcode = call(path, env=callenv)
                 if retcode:
                     raise DBError('script failed: %s' % fn)
-                print '  script migration applied: %s' % fn
+                print('  script migration applied: %s' % fn)
 
             else:
-                print '  skipping file: %s' % fn
+                print('  skipping file: %s' % fn)
 
     @tx(lambda self: self.repo)
     def apply(self, env=None, fake=False):
@@ -191,10 +199,10 @@ class Migration(object):
                 dep.apply(env=env, fake=fake)
 
         if not fake:
-            print 'applying migration %s:' % self
+            print('applying migration %s:' % self)
             self._apply(env=env)
         else:
-            print 'applying "fake" migration %s' % self
+            print('applying "fake" migration %s' % self)
 
         self.repo.engine.query('INSERT INTO %s (name, date) VALUES (?, ?)'
                                % self.repo.conf['nomad']['table'],
