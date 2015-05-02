@@ -5,19 +5,14 @@ from setuptools import setup, find_packages
 
 
 DEPS = ['opster>=4.0', 'termcolor']
-extra = {}
 
-if sys.version_info[0] >= 3:
-    extra.update(dict(
-        use_2to3=True,
-        convert_2to3_doctests=['nomad/utils.py'],
-    ))
-else:
+if sys.version_info[0] < 3:
     DEPS.append('configparser')
 
 
 def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+    with open(os.path.join(os.path.dirname(__file__), fname)) as handler:
+        return handler.read()
 
 def find_version():
     val, = re.findall(r"__version__ = '([^']+)'",
@@ -44,12 +39,11 @@ config = dict(
         'Topic :: Software Development :: Version Control',
         'Topic :: Database'
         ],
-
     install_requires = DEPS,
     packages = find_packages(),
     entry_points = {'console_scripts': ['nomad=nomad:app.dispatch']},
-    platforms='any',
-    **extra)
+    platforms='any')
+
 
 if __name__ == '__main__':
     setup(**config)

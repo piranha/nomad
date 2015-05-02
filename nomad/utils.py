@@ -1,15 +1,21 @@
-import sys
-import re
-import os, os.path as op
-import shlex
 import imp
 import json
-from subprocess import Popen, PIPE
+import os
+import os.path as op
+import re
+import shlex
+import sys
+
 from configparser import ConfigParser, ExtendedInterpolation
+from subprocess import Popen, PIPE
 
 from termcolor import cprint
 
-if sys.version_info[0] == 3:
+
+IS_PY3 = sys.version_info[0] == 3
+
+if IS_PY3:
+    from functools import reduce
     shell_split = shlex.split
 else:
     def shell_split(cmd):
@@ -53,20 +59,21 @@ def shsplit(s):
 
 
 def humankey(fn):
-  '''Turn a string into a list of substrings and numbers.
+    """Turn a string into a list of substrings and numbers.
 
-  This can be used as a key function for ``sorted``::
+    This can be used as a key function for ``sorted``::
 
-    >>> s = lambda *x: list(sorted(x, key=humankey))
-    >>> print s('up-1', 'up-5', 'up-15', 'up-50')
-    ['up-1', 'up-5', 'up-15', 'up-50']
-    >>> print s('up-1.sql', 'up.sql', 'up1.sql')
-    ['up.sql', 'up1.sql', 'up-1.sql']
-    >>> print s('up.rb', 'up.py') # check extension sorting
-    ['up.py', 'up.rb']
-  '''
-  fn, ext = os.path.splitext(fn)
-  return [int(s) if s.isdigit() else s for s in NUM_RE.split(fn)], ext
+        >>> s = lambda *x: list(sorted(x, key=humankey))
+        >>> print(s('up-1', 'up-5', 'up-15', 'up-50'))
+        ['up-1', 'up-5', 'up-15', 'up-50']
+        >>> print(s('up-1.sql', 'up.sql', 'up1.sql'))
+        ['up.sql', 'up1.sql', 'up-1.sql']
+        >>> print(s('up.rb', 'up.py')) # check extension sorting
+        ['up.py', 'up.rb']
+
+    """
+    fn, ext = os.path.splitext(fn)
+    return [int(s) if s.isdigit() else s for s in NUM_RE.split(fn)], ext
 
 
 def loadpath(path):

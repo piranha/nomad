@@ -1,0 +1,5 @@
+cram==0.6
+PyYAML==3.11
+SQLAlchemy==0.9.9
+
+-e .
