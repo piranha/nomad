@@ -1,20 +1,27 @@
-import os, os.path as op
+import os
+import os.path as op
 import sys
 
-from datetime import datetime
 from configparser import ConfigParser, ExtendedInterpolation
-from subprocess import call
+from datetime import datetime
 from functools import wraps
+from subprocess import call
 
-from nomad.utils import (cachedproperty, geturl, NomadError, NomadIniNotFound,
-                         clean_sql, abort, humankey)
 from nomad.engine import DBError
+from nomad.utils import (
+    abort,
+    cachedproperty,
+    clean_sql,
+    geturl,
+    humankey,
+    IS_PY3,
+    NomadError,
+    NomadIniNotFound,
+)
 
 
 def iteritems(data, **kwargs):
-    return (iter(data.items(**kwargs))
-            if sys.version_info[0] == 3
-            else data.iteritems(**kwargs))
+    return iter(data.items(**kwargs)) if IS_PY3 else data.iteritems(**kwargs)
 
 
 def tx(getrepo):
