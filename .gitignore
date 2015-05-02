@@ -1,8 +1,9 @@
 *.pyc
+.python-version
 
 /dist/
 /docs/_build/
-/env/
+/env*/
 /nomad.egg-info/
 
 MANIFEST
