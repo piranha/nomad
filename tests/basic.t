@@ -70,3 +70,14 @@ No problems with trailing slash that can easily occur from autocomplete::
   $ $NOMAD apply 3-fourth
   \x1b[31mError: migration 3-fourth is already applied\x1b[0m (esc)
   [1]
+
+Dependencies has no sense when applying all migrations::
+
+  $ $NOMAD create 11-twelfth -d 10-eleventh
+  $ $NOMAD apply -a
+  applying migration 10-eleventh:
+    sql migration applied: up.sql
+  applying migration 10-eleventh:
+    sql migration applied: up.sql
+  applying migration 11-twelfth:
+    sql migration applied: up.sql
