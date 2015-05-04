@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os, os.path as op
 from datetime import datetime
 from configparser import ConfigParser, ExtendedInterpolation
@@ -167,7 +168,7 @@ class Migration(object):
             if fn.endswith('.sql'):
                 with open(path) as f:
                     self.repo.engine.query(clean_sql(f.read()))
-                print '  sql migration applied: %s' % fn
+                print('  sql migration applied: %s' % fn)
 
             elif os.access(path, os.X_OK):
                 callenv = dict(os.environ,
@@ -179,10 +180,10 @@ class Migration(object):
                 retcode = call(path, env=callenv)
                 if retcode:
                     raise DBError('script failed: %s' % fn)
-                print '  script migration applied: %s' % fn
+                print('  script migration applied: %s' % fn)
 
             else:
-                print '  skipping file: %s' % fn
+                print('  skipping file: %s' % fn)
 
     @tx(lambda self: self.repo)
     def apply(self, env=None, fake=False):
@@ -193,10 +194,10 @@ class Migration(object):
                 dep.apply(env=env, fake=fake)
 
         if not fake:
-            print 'applying migration %s:' % self
+            print('applying migration %s:' % self)
             self._apply(env=env)
         else:
-            print 'applying "fake" migration %s' % self
+            print('applying "fake" migration %s' % self)
 
         self.repo.engine.query('INSERT INTO %s (name, date) VALUES (?, ?)'
                                % self.repo.conf['nomad']['table'],

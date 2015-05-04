@@ -7,6 +7,7 @@
 
  - Fix bug when applying multiple migrations and one had some dependency, it
    could try to apply this dependency even in case when it was already applied
+ - Unified codebase for both Python 2 & 3 (no more 2to3)
 
 1.12
 ----

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 import re
 import os, os.path as op
@@ -58,11 +59,11 @@ def humankey(fn):
   This can be used as a key function for ``sorted``::
 
     >>> s = lambda *x: list(sorted(x, key=humankey))
-    >>> print s('up-1', 'up-5', 'up-15', 'up-50')
+    >>> print(s('up-1', 'up-5', 'up-15', 'up-50'))
     ['up-1', 'up-5', 'up-15', 'up-50']
-    >>> print s('up-1.sql', 'up.sql', 'up1.sql')
+    >>> print(s('up-1.sql', 'up.sql', 'up1.sql'))
     ['up.sql', 'up1.sql', 'up-1.sql']
-    >>> print s('up.rb', 'up.py') # check extension sorting
+    >>> print(s('up.rb', 'up.py')) # check extension sorting
     ['up.py', 'up.rb']
   '''
   fn, ext = os.path.splitext(fn)

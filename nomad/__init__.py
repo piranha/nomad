@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import os, os.path as op, sys
 from datetime import date
 
@@ -54,7 +55,7 @@ def init(**opts):
         opts['repo'].init_db()
     except DBError as e:
         abort(e)
-    print 'Versioning table initialized successfully'
+    print('Versioning table initialized successfully')
 
 
 @app.command(name='list', aliases=('ls',))
@@ -67,7 +68,7 @@ def list_(all=('a', False, 'show all migrations (default: only non-applied)'),
                                        if m not in repo.available]
     for m in all_migrations:
         if m not in repo.available:
-            print colored(m, 'red') + ' (not on disk)'
+            print(colored(m, 'red') + ' (not on disk)')
         elif m in repo.applied:
             if all:
                 cprint(m, 'magenta')
@@ -79,7 +80,7 @@ def list_(all=('a', False, 'show all migrations (default: only non-applied)'),
                     deps.append(dep)
             if deps:
                 out += ' (%s)' % ', '.join(map(str, deps))
-            print out
+            print(out)
 
 
 @app.command()
@@ -134,7 +135,7 @@ def apply(all=('a', False, 'apply all available migrations'),
             pass
 
     if names:
-        migrations = map(repo.get, names)
+        migrations = [repo.get(x) for x in names]
     elif all:
         migrations = [x for x in repo.available if x not in repo.applied]
     else:
@@ -159,20 +160,20 @@ def info(**opts):
     '''Show information about repository
     '''
     repo = opts['repo']
-    print '%s:' % repo
-    print '  %s' % repo.engine
+    print('%s:' % repo)
+    print('  %s' % repo.engine)
     try:
-        print '  %s applied' % len(repo.applied)
-        print '  %s unapplied' % (len(repo.available) - len(repo.applied))
+        print('  %s applied' % len(repo.applied))
+        print('  %s unapplied' % (len(repo.available) - len(repo.applied)))
     except DBError:
-        print '  Uninitialized repository'
+        print('  Uninitialized repository')
 
 
 @app.command()
 def version(**opts):
     '''Show nomad version
     '''
-    print 'Nomad v%s' % __version__
+    print('Nomad v%s' % __version__)
 
 
 if __name__ == '__main__':
