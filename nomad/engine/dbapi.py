@@ -40,7 +40,7 @@ class Connection(object):
         c = self.connection.cursor()
         try:
             c.execute(statement, args)
-        except self.exc, e:
+        except self.exc as e:
             raise DBError(e)
 
         data = self.fetch(c)
@@ -110,7 +110,7 @@ class Pgsql(Connection):
     def connect(self):
         try:
             return self.module.connect(**self.parameters)
-        except self.module.OperationalError, e:
+        except self.module.OperationalError as e:
             raise DBError('psycopg2: %s' % e)
 
     def prepare(self, statement):

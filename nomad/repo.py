@@ -58,7 +58,7 @@ class Repository(object):
 
         try:
             enginemod = __import__(enginepath, {}, {}, [''])
-        except ImportError, e:
+        except ImportError as e:
             raise NomadError('cannot use engine %s: %s' % (enginepath, e))
 
         try:
@@ -69,7 +69,7 @@ class Repository(object):
         self.engine = getattr(enginemod, 'engine')(self.url)
         try:
             self.engine.connection
-        except DBError, e:
+        except DBError as e:
             abort(e)
 
     def __repr__(self):

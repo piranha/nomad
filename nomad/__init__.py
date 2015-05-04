@@ -33,11 +33,11 @@ def getconfig(func):
     def inner(*args, **kwargs):
         try:
             repo = Repository(kwargs['config'], kwargs['define'])
-        except NomadIniNotFound, e:
+        except NomadIniNotFound as e:
             sys.stderr.write("Create '%s' to use nomad, example:\n%s\n" %
                              (e, EXAMPLE_INI))
             abort('config file not found')
-        except (IOError, NomadError), e:
+        except (IOError, NomadError) as e:
             abort(e)
 
         return func(repo=repo, *args, **kwargs)
@@ -52,7 +52,7 @@ def init(**opts):
     '''
     try:
         opts['repo'].init_db()
-    except DBError, e:
+    except DBError as e:
         abort(e)
     print 'Versioning table initialized successfully'
 
@@ -98,7 +98,7 @@ def create(name,
     path = op.join(repo.path, name)
     try:
         os.mkdir(path)
-    except OSError, e:
+    except OSError as e:
         if e.errno == 17:
             abort('directory %s already exists' % path)
         raise
@@ -150,7 +150,7 @@ def apply(all=('a', False, 'apply all available migrations'),
     for m in migrations:
         try:
             m.apply(env=env, fake=fake)
-        except DBError, e:
+        except DBError as e:
             abort('cannot apply migration %s: %s' % (m, e))
 
 
