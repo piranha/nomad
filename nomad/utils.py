@@ -1,7 +1,6 @@
 import imp
 import json
-import os
-import os.path as op
+import os, os.path as op
 import re
 import shlex
 import sys
@@ -59,7 +58,7 @@ def shsplit(s):
 
 
 def humankey(fn):
-    """Turn a string into a list of substrings and numbers.
+    '''Turn a string into a list of substrings and numbers.
 
     This can be used as a key function for ``sorted``::
 
@@ -71,7 +70,7 @@ def humankey(fn):
         >>> print(s('up.rb', 'up.py')) # check extension sorting
         ['up.py', 'up.rb']
 
-    """
+    '''
     fn, ext = os.path.splitext(fn)
     return [int(s) if s.isdigit() else s for s in NUM_RE.split(fn)], ext
 

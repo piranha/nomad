@@ -1,5 +1,4 @@
-import os
-import os.path as op
+import os, os.path as op
 import sys
 
 from configparser import ConfigParser, ExtendedInterpolation
@@ -8,16 +7,8 @@ from functools import wraps
 from subprocess import call
 
 from nomad.engine import DBError
-from nomad.utils import (
-    abort,
-    cachedproperty,
-    clean_sql,
-    geturl,
-    humankey,
-    IS_PY3,
-    NomadError,
-    NomadIniNotFound,
-)
+from nomad.utils import (abort, cachedproperty, clean_sql, geturl,
+                         humankey, IS_PY3, NomadError, NomadIniNotFound)
 
 
 def iteritems(data, **kwargs):
