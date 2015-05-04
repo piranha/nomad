@@ -28,7 +28,7 @@ def tx(getrepo):
 class Repository(object):
     DEFAULTS = {
         'nomad': {'table': 'nomad'},
-        }
+    }
 
     def __init__(self, confpath, overrides=None):
         self.conf = ConfigParser(
@@ -78,8 +78,7 @@ class Repository(object):
     def get(self, name):
         if name.endswith('/'):
             name = name[:-1]
-        applied = name in self.appliednames
-        return Migration(self, name, applied=applied)
+        return Migration(self, name)
 
     # actual work is done here
     @tx(lambda self: self)
@@ -94,9 +93,9 @@ class Repository(object):
 
     @cachedproperty
     def appliednames(self):
-        return [x for (x, ) in
-                self.engine.query('SELECT name FROM %s ORDER BY date' %
-                                  self.conf['nomad']['table'])]
+       return [x for (x, ) in
+               self.engine.query('SELECT name FROM %s ORDER BY date' %
+                                 self.conf['nomad']['table'])]
 
     @property
     def applied(self):
@@ -116,7 +115,7 @@ class Migration(object):
             cls.SINGLETONS[key] = object.__new__(cls)
         return cls.SINGLETONS[key]
 
-    def __init__(self, repo, name, applied=False):
+    def __init__(self, repo, name):
         self.repo = repo
         self.name = name
         self.conf = ConfigParser(
@@ -130,7 +129,6 @@ class Migration(object):
         deps = self.conf.get('nomad', 'dependencies', fallback='').split(',')
         self._deps = [x.strip() for x in deps if x.strip()]
 
-        self.applied = applied
         self.exists = op.exists(op.join(repo.path, name))
 
     def __repr__(self):
@@ -151,6 +149,10 @@ class Migration(object):
     @cachedproperty
     def dependencies(self):
         return map(self.repo.get, self._deps)
+
+    @property
+    def applied(self):
+        return self.name in self.repo.appliednames
 
     def _apply(self, env=None):
         '''The real work for applying a migration
@@ -199,4 +201,4 @@ class Migration(object):
         self.repo.engine.query('INSERT INTO %s (name, date) VALUES (?, ?)'
                                % self.repo.conf['nomad']['table'],
                                self.name, str(datetime.now()))
-        self.applied = True
+        self.repo._property_cache = {}

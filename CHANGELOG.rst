@@ -2,6 +2,12 @@
  Nomad Changelog
 =================
 
+1.13
+----
+
+ - Fix bug when applying multiple migrations and one had some dependency, it
+   could try to apply this dependency even in case when it was already applied
+
 1.12
 ----
 
