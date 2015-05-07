@@ -2,6 +2,11 @@
  Nomad Changelog
 =================
 
+1.14
+----
+
+ - Fix bug with inserting question marks in migrations
+
 1.13
 ----
 

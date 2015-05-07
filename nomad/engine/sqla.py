@@ -1,3 +1,5 @@
+import re
+
 from sqlalchemy import create_engine, exc
 
 from nomad.engine import BaseEngine, DBError
@@ -13,7 +15,8 @@ class SAEngine(BaseEngine):
         return statement
 
     def query(self, statement, *args, **kwargs):
-        statement = self.prepare(statement)
+        if not kwargs.pop('no_prepare', False):
+            statement = self.prepare(statement)
         try:
             return self.connection.execute(statement, *args, **kwargs)
         except exc.SQLAlchemyError as e:
