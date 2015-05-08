@@ -2,7 +2,7 @@
  Nomad Changelog
 =================
 
-1.15
+1.16
 ----
 
  - Fix bug with inserting percentage sign in migrations for pg/mysql

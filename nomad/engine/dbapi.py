@@ -136,7 +136,7 @@ class DBEngine(BaseEngine):
             raise DBError('scheme "%s" not supported' % p.scheme)
         return CONNECTORS[p.scheme](p)
 
-    def query(self, statement, *args):
+    def query(self, statement, *args, **kwargs):
         return self.connection.query(statement, *args)
 
 
