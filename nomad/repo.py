@@ -167,7 +167,7 @@ class Migration(object):
 
             if fn.endswith('.sql'):
                 with open(path) as f:
-                    self.repo.engine.query(clean_sql(f.read()), no_prepare=True)
+                    self.repo.engine.query(clean_sql(f.read()), escape=True)
                 print('  sql migration applied: %s' % fn)
 
             elif os.access(path, os.X_OK):

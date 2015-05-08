@@ -79,3 +79,12 @@ Dependencies should not break when applying all migrations::
     sql migration applied: up.sql
   applying migration 11-twelfth:
     sql migration applied: up.sql
+
+It's possible to insert % into a db::
+  $ $NOMAD create 12-thirteen
+  $ echo "insert into test values ('test%');" > 12-thirteen/up.sql
+  $ $NOMAD apply -a
+  applying migration 12-thirteen:
+    sql migration applied: up.sql
+  $ sqlite3 test.db 'select * from test'
+  test%

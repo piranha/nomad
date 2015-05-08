@@ -2,10 +2,15 @@
  Nomad Changelog
 =================
 
+1.15
+----
+
+ - Fix bug with inserting percentage sign in migrations for pg/mysql
+
 1.14
 ----
 
- - Fix bug with inserting question marks in migrations
+ - Fix bug with inserting question marks in migrations for pg/mysql
 
 1.13
 ----
