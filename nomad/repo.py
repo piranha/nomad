@@ -170,7 +170,7 @@ class Migration(object):
                     self.repo.engine.query(clean_sql(f.read()), escape=True)
                 print('  sql migration applied: %s' % fn)
 
-            elif os.access(path, os.X_OK):
+            elif os.access(path, os.X_OK) and not op.isdir(path):
                 callenv = dict(os.environ,
                                # for backward compatibility
                                NOMAD_DBURL=self.repo.url,

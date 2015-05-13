@@ -2,6 +2,11 @@
  Nomad Changelog
 =================
 
+1.17
+----
+
+ - Skip directories inside of migrations instead of dying with an exception
+
 1.16
 ----
 

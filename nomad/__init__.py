@@ -12,7 +12,7 @@ from nomad.engine import DBError
 from nomad.utils import abort, NomadError, NomadIniNotFound
 
 
-__version__ = '1.16'
+__version__ = '1.17'
 
 
 GLOBAL = [
