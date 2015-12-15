@@ -3,7 +3,11 @@ import urllib
 
 from nomad.engine import BaseEngine, DBError
 
-unq = urllib.unquote
+
+def unq(s):
+    if isinstance(s, str):
+        return urllib.unquote(s)
+    return s
 
 
 class Connection(object):
@@ -66,6 +70,9 @@ class Mysql(Connection):
                            'db':     unq(url.path.lstrip('/')),
                            'user':   unq(url.username),
                            'passwd': unq(url.password)}
+        for k, v in self.parameters.items():
+            if not v:
+                del self.parameters[k]
         import MySQLdb
         self.module = MySQLdb
         self.exc = MySQLdb.MySQLError
