@@ -3,21 +3,7 @@ import urllib
 
 from nomad.engine import BaseEngine, DBError
 
-
-def path2dict(p, **renames):
-    '''Convert urlparse result to dict
-    '''
-    result = {}
-    for k in 'hostname port path username password'.split():
-        value = getattr(p, k, None)
-        if not value:
-            continue
-        if isinstance(value, str):
-            value = urllib.unquote(value)
-        if k == 'path':
-            value = value.lstrip('/')
-        result[renames.get(k, k)] = value
-    return result
+unq = urllib.unquote
 
 
 class Connection(object):
@@ -74,9 +60,12 @@ class Sqlite(Connection):
 
 class Mysql(Connection):
     _conn = None
-    def __init__(self, path):
-        self.parameters = path2dict(path, hostname='host',
-                                    password='passwd', path='db', username='user')
+    def __init__(self, url):
+        self.parameters = {'host':   unq(url.hostname),
+                           'port':   url.port,
+                           'db':     unq(url.path.lstrip('/')),
+                           'user':   unq(url.username),
+                           'passwd': unq(url.password)}
         import MySQLdb
         self.module = MySQLdb
         self.exc = MySQLdb.MySQLError
@@ -100,8 +89,17 @@ class Mysql(Connection):
 
 class Pgsql(Connection):
     _conn = None
-    def __init__(self, path):
-        self.parameters = path2dict(path, hostname='host', path='database', username='user')
+    def __init__(self, url):
+        self.parameters = {'host':     unq(url.hostname),
+                           'port':     url.port,
+                           'database': unq(url.path.lstrip('/')),
+                           'user':     unq(url.username),
+                           'password': unq(url.password)}
+        if url.query:
+            self.options = url.query.split('&')
+        else:
+            self.options = ['statement_timeout=1000', 'lock_timeout=500']
+
         import psycopg2
         self.module = psycopg2
         self.exc = psycopg2.Error
@@ -124,6 +122,10 @@ class Pgsql(Connection):
         except self.module.ProgrammingError:
             return []
 
+    def begin(self):
+        c = self.connection.cursor()
+        c.executemany(['BEGIN'] + ['set ' + x for x in self.options], [])
+        c.close()
 
 CONNECTORS = {'sqlite': Sqlite, 'mysql': Mysql,
               'pgsql': Pgsql, 'postgresql': Pgsql, 'postgres': Pgsql}
