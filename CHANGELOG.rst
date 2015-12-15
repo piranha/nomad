@@ -2,6 +2,11 @@
  Nomad Changelog
 =================
 
+1.18
+----
+
+- Ability to set options for pgsql
+
 1.17
 ----
 

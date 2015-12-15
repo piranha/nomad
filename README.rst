@@ -144,6 +144,14 @@ An example::
     json:${confdir}/../settings.json:db.url
     sqlite:///${confdir}/../local.db
 
+Notice that in all cases in the end you have to return URL to a database in
+normal format, i.e. ``dbtype://user:pass@host:port/dbname?options``.
+
+``options`` are supported only by pgsql right now, whatever you put there, nomad
+will do ``set ...`` before every migration. Note that if you do not supply
+anything there, nomad sets ``statement_timeout`` to 1000 ms and ``lock_timeout``
+to 500 ms by default.
+  
 Main ideas
 ----------
 
