@@ -12,6 +12,8 @@ First, set up environment::
   > [nomad]
   > engine = sqla
   > url = sqlite:///test.db
+  > [foo]
+  > bar = zeta
   > EOF
 
 First, initialize migrations repository::
@@ -88,3 +90,18 @@ It's possible to insert % into a db::
     sql migration applied: up.sql
   $ sqlite3 test.db 'select * from test'
   test%
+
+Using configuration templates
+  $ $NOMAD create 13-fourteen
+  $ mv 13-fourteen/up.sql 13-fourteen/up.sql.j2
+  $ echo "create table {{ foo.bar }} (value varchar(10));" > 13-fourteen/up.sql.j2
+  $ $NOMAD create 14-fifteen
+  $ mv 14-fifteen/up.sql 14-fifteen/up.sql.j2
+  $ echo "insert into {{ foo.bar }} values ('test');" >> 14-fifteen/up.sql.j2
+  $ $NOMAD apply -a
+  applying migration 13-fourteen:
+    sql template migration applied: up.sql.j2
+  applying migration 14-fifteen:
+    sql template migration applied: up.sql.j2
+  $ sqlite3 test.db 'select value from zeta'
+  test

@@ -150,6 +150,9 @@ class Migration(object):
             return humankey(self.name) < humankey(other.name)
         raise TypeError('Migrations can be compared only with other migrations')
 
+    def get_config_dict(self):
+        return { k: dict(self.conf.items(k)) for k in self.conf.sections() }
+
     @property
     def path(self):
         return op.join(self.repo.path, self.name)
@@ -176,6 +179,16 @@ class Migration(object):
                 with open(path) as f:
                     self.repo.engine.query(clean_sql(f.read()), escape=True)
                 print('  sql migration applied: %s' % fn)
+
+            elif fn.endswith('.j2'):
+                import jinja2
+                j2_env = jinja2.Environment(
+                    loader=jinja2.FileSystemLoader(os.path.dirname(path))
+                )
+                j2_sql = j2_env.get_template(fn).render(self.get_config_dict())
+
+                self.repo.engine.query(clean_sql(j2_sql), escape=True)
+                print('  sql template migration applied: %s' % fn)
 
             elif os.access(path, os.X_OK) and not op.isdir(path):
                 callenv = dict(os.environ,
