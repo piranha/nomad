@@ -139,7 +139,7 @@ Nothing defined::
 
   $ echo '[nomad]\nengine=sqla' > nomad.ini
   $ $NOMAD info
-  \x1b[31mError: database url in <Repository: .> is not found\x1b[0m (esc)
+  \x1b[31mError: database url was not found in the nomad Configuration\x1b[0m (esc)
   [1]
 
 MultiURL::

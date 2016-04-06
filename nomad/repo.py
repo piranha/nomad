@@ -1,6 +1,7 @@
 from __future__ import print_function
 import os
 import os.path as op
+from copy import copy
 from datetime import datetime
 from configparser import ConfigParser, ExtendedInterpolation
 from subprocess import call
@@ -43,7 +44,7 @@ def get_engine(conf):
     try:
         url = geturl(conf['nomad']['url'])
     except KeyError:
-        abort('database url in %s is not found' % conf)
+        abort('database url was not found in the nomad Configuration')
 
     engine = getattr(enginemod, 'engine')(url)
     try:
@@ -51,7 +52,7 @@ def get_engine(conf):
     except DBError as e:
         abort(e)
 
-    return engine
+    return engine, url
 
 
 class Repository(object):
@@ -60,13 +61,10 @@ class Repository(object):
     }
 
     def __init__(self, confpath, overrides=None):
-        self.conf = ConfigParser(
-            interpolation=ExtendedInterpolation(),
-            defaults={
-                'confpath': op.abspath(confpath),
-                'confdir': op.dirname(op.abspath(confpath)),
-            })
+        self.conf = ConfigParser(interpolation=ExtendedInterpolation())
         self.conf.read_dict(self.DEFAULTS)
+        self.conf.set('nomad', 'confpath', op.abspath(confpath))
+        self.conf.set('nomad', 'confdir',  op.dirname(op.abspath(confpath)))
         if not self.conf.read([confpath]):
             raise NomadIniNotFound(confpath)
 
@@ -77,7 +75,7 @@ class Repository(object):
         self.confpath = confpath
         self.path = self.conf.get('nomad', 'path',
                                   fallback=op.dirname(confpath) or '.')
-        self.engine = get_engine(self.conf)
+        self.engine, self.url = get_engine(self.conf)
 
     def __repr__(self):
         return '<%s: %s>' % (type(self).__name__, self.path)
@@ -109,10 +107,6 @@ class Repository(object):
     def applied(self):
         return [self.get(x) for x in self.appliednames]
 
-    def get_env(self):
-        return dict(('NOMAD_' + k.upper(), v)
-                    for k, v in self.conf['nomad'].items())
-
 
 class Migration(object):
     SINGLETONS = {}
@@ -126,15 +120,10 @@ class Migration(object):
     def __init__(self, repo, name):
         self.repo = repo
         self.name = name
-        self.conf = ConfigParser(
-            interpolation=ExtendedInterpolation(),
-            defaults={
-                'confpath': op.abspath(self.repo.confpath),
-                'confdir': op.dirname(op.abspath(self.repo.confpath)),
-                'dir': op.abspath(op.join(repo.path, name))
-            })
+        self.conf = copy(self.repo.conf)
         self.conf.read([op.join(repo.path, name, 'migration.ini')])
-        deps = self.conf.get('nomad', 'dependencies', fallback='').split(',')
+        self.conf.set('nomad', 'dir', op.abspath(op.join(self.repo.path, name)))
+        deps = self.repo.conf.get('nomad', 'dependencies', fallback='').split(',')
         self._deps = [x.strip() for x in deps if x.strip()]
 
         self.exists = op.exists(op.join(repo.path, name))
@@ -152,6 +141,11 @@ class Migration(object):
 
     def get_config_dict(self):
         return { k: dict(self.conf.items(k)) for k in self.conf.sections() }
+
+    def get_env(self):
+        return [{'{}_{}'.format(s.upper(), k.upper()) : v
+                 for k, v in self.conf.items(s) }
+                for s in self.conf.sections() ][0]
 
     @property
     def path(self):
@@ -194,7 +188,7 @@ class Migration(object):
                 callenv = dict(os.environ,
                                # for backward compatibility
                                NOMAD_DBURL=self.repo.url,
-                               **self.repo.get_env())
+                               **self.get_env())
                 if env:
                     callenv.update(env)
                 retcode = call(path, env=callenv)
