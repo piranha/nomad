@@ -30,10 +30,11 @@ This will create directory with name ``2012-09-21-first`` and two files inside:
 ``migration.ini`` and ``up.sql``. Name of first file matters - it contains
 information about dependencies of a migration (which can be passed as ``-d``
 option to ``create`` command). Name of second file doesn't matter - any
-``*.sql`` or executable files (file with executable bit set) will be
-run. ``*.sql`` files are applied to database, while executable files (which can
-be your script to do something before or after migration, or even migration
-itself) are just executed.
+``*.sql``, ``*.j2``, or executable files (file with executable bit set) will be
+run. ``*.sql`` files are applied to database, ``*.j2`` files are applied to
+the database after being passed through the ``jinja2`` template system, and
+executable files (which can be your script to do something before or after
+migration, or even migration itself) are just executed.
 
 You can then list or apply migrations - just read help about them (``nomad help
 ls`` or ``nomad help apply``). Also, reading :doc:`test-basic` can be helpful as
