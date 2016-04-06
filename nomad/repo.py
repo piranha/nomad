@@ -98,7 +98,7 @@ class Repository(object):
 
     @cachedproperty
     def appliednames(self):
-        q = 'SELECT name FROM {} ORDER BY date'.format(
+        q = 'SELECT name FROM {0} ORDER BY date'.format(
             self.conf['nomad']['table']
         )
         return [x for (x, ) in self.engine.query(q)]
@@ -146,7 +146,7 @@ class Migration(object):
         envs = {}
         for k, d in self.get_config_dict().items():
             for i, v in d.items():
-                envs['{}_{}'.format(k.upper(), i.upper())] = v
+                envs['{0}_{1}'.format(k.upper(), i.upper())] = v
         return envs
 
     @property
