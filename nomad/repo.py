@@ -140,7 +140,7 @@ class Migration(object):
         raise TypeError('Migrations can be compared only with other migrations')
 
     def get_config_dict(self):
-        return { k: dict(self.conf.items(k)) for k in self.conf.sections() }
+        return dict((k, dict(self.conf.items(k))) for k in self.conf.sections())
 
     def get_env(self):
         return [{'{}_{}'.format(s.upper(), k.upper()) : v
