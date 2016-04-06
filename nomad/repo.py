@@ -27,6 +27,33 @@ def tx(getrepo):
     return decorator
 
 
+def get_engine(conf):
+    try:
+        enginepath = conf['nomad']['engine']
+        if '.' not in enginepath:
+            enginepath = 'nomad.engine.' + enginepath
+    except KeyError:
+        raise NomadError('nomad.engine is not defined in config file')
+
+    try:
+        enginemod = __import__(enginepath, {}, {}, [''])
+    except ImportError as e:
+        raise NomadError('cannot use engine %s: %s' % (enginepath, e))
+
+    try:
+        url = geturl(conf['nomad']['url'])
+    except KeyError:
+        abort('database url in %s is not found' % conf)
+
+    engine = getattr(enginemod, 'engine')(url)
+    try:
+        engine.connection
+    except DBError as e:
+        abort(e)
+
+    return engine
+
+
 class Repository(object):
     DEFAULTS = {
         'nomad': {'table': 'nomad'},
@@ -50,29 +77,7 @@ class Repository(object):
         self.confpath = confpath
         self.path = self.conf.get('nomad', 'path',
                                   fallback=op.dirname(confpath) or '.')
-
-        try:
-            enginepath = self.conf['nomad']['engine']
-            if not '.' in enginepath:
-                enginepath = 'nomad.engine.' + enginepath
-        except KeyError:
-            raise NomadError('nomad.engine is not defined in config file')
-
-        try:
-            enginemod = __import__(enginepath, {}, {}, [''])
-        except ImportError as e:
-            raise NomadError('cannot use engine %s: %s' % (enginepath, e))
-
-        try:
-            self.url = geturl(self.conf['nomad']['url'])
-        except KeyError:
-            abort('database url in %s is not found' % self)
-
-        self.engine = getattr(enginemod, 'engine')(self.url)
-        try:
-            self.engine.connection
-        except DBError as e:
-            abort(e)
+        self.engine = get_engine(self.conf)
 
     def __repr__(self):
         return '<%s: %s>' % (type(self).__name__, self.path)
