@@ -1,5 +1,6 @@
 from __future__ import print_function
-import os, os.path as op
+import os
+import os.path as op
 from datetime import datetime
 from configparser import ConfigParser, ExtendedInterpolation
 from subprocess import call
@@ -94,9 +95,10 @@ class Repository(object):
 
     @cachedproperty
     def appliednames(self):
-       return [x for (x, ) in
-               self.engine.query('SELECT name FROM %s ORDER BY date' %
-                                 self.conf['nomad']['table'])]
+        q = 'SELECT name FROM {} ORDER BY date'.format(
+            self.conf['nomad']['table']
+        )
+        return [x for (x, ) in self.engine.query(q)]
 
     @property
     def applied(self):

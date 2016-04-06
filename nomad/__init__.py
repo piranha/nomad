@@ -31,6 +31,7 @@ EXAMPLE_INI = '''
 def getconfig(func):
     if func.__name__.startswith('help') or func.__name__ in ('version',):
         return func
+
     def inner(*args, **kwargs):
         try:
             repo = Repository(kwargs['config'], kwargs['define'])
@@ -60,7 +61,7 @@ def init(**opts):
 
 @app.command(name='list', aliases=('ls',))
 def list_(all=('a', False, 'show all migrations (default: only non-applied)'),
-         **opts):
+          **opts):
     '''List migrations
     '''
     repo = opts['repo']
