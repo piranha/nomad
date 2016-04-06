@@ -143,9 +143,11 @@ class Migration(object):
         return dict((k, dict(self.conf.items(k))) for k in self.conf.sections())
 
     def get_env(self):
-        return [{'{}_{}'.format(s.upper(), k.upper()) : v
-                 for k, v in self.conf.items(s) }
-                for s in self.conf.sections() ][0]
+        envs = {}
+        for k, d in self.get_config_dict().items():
+            for i, v in d.items():
+                envs['{}_{}'.format(k.upper(), i.upper())] = v
+        return envs
 
     @property
     def path(self):
@@ -180,7 +182,6 @@ class Migration(object):
                     loader=jinja2.FileSystemLoader(os.path.dirname(path))
                 )
                 j2_sql = j2_env.get_template(fn).render(self.get_config_dict())
-
                 self.repo.engine.query(clean_sql(j2_sql), escape=True)
                 print('  sql template migration applied: %s' % fn)
 
