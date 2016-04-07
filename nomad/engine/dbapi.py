@@ -64,6 +64,7 @@ class Sqlite(Connection):
 
 class Mysql(Connection):
     _conn = None
+
     def __init__(self, url):
         self.parameters = {'host':   unq(url.hostname),
                            'port':   url.port,
@@ -96,6 +97,7 @@ class Mysql(Connection):
 
 class Pgsql(Connection):
     _conn = None
+
     def __init__(self, url):
         self.parameters = {'host':     unq(url.hostname),
                            'port':     url.port,

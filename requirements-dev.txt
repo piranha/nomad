@@ -1,5 +1,6 @@
 SQLAlchemy==1.0.3
 cram==0.6
 PyYAML==3.11
+jinja2
 
 -e .

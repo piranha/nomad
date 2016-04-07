@@ -1,5 +1,7 @@
 from __future__ import print_function
-import os, os.path as op
+import os
+import os.path as op
+from copy import copy
 from datetime import datetime
 from configparser import ConfigParser, ExtendedInterpolation
 from subprocess import call
@@ -26,19 +28,43 @@ def tx(getrepo):
     return decorator
 
 
+def get_engine(conf):
+    try:
+        enginepath = conf['nomad']['engine']
+        if '.' not in enginepath:
+            enginepath = 'nomad.engine.' + enginepath
+    except KeyError:
+        raise NomadError('nomad.engine is not defined in config file')
+
+    try:
+        enginemod = __import__(enginepath, {}, {}, [''])
+    except ImportError as e:
+        raise NomadError('cannot use engine %s: %s' % (enginepath, e))
+
+    try:
+        url = geturl(conf['nomad']['url'])
+    except KeyError:
+        abort('database url was not found in the nomad Configuration')
+
+    engine = getattr(enginemod, 'engine')(url)
+    try:
+        engine.connection
+    except DBError as e:
+        abort(e)
+
+    return engine, url
+
+
 class Repository(object):
     DEFAULTS = {
         'nomad': {'table': 'nomad'},
     }
 
     def __init__(self, confpath, overrides=None):
-        self.conf = ConfigParser(
-            interpolation=ExtendedInterpolation(),
-            defaults={
-                'confpath': op.abspath(confpath),
-                'confdir': op.dirname(op.abspath(confpath)),
-            })
+        self.conf = ConfigParser(interpolation=ExtendedInterpolation())
         self.conf.read_dict(self.DEFAULTS)
+        self.conf.set('nomad', 'confpath', op.abspath(confpath))
+        self.conf.set('nomad', 'confdir',  op.dirname(op.abspath(confpath)))
         if not self.conf.read([confpath]):
             raise NomadIniNotFound(confpath)
 
@@ -49,29 +75,7 @@ class Repository(object):
         self.confpath = confpath
         self.path = self.conf.get('nomad', 'path',
                                   fallback=op.dirname(confpath) or '.')
-
-        try:
-            enginepath = self.conf['nomad']['engine']
-            if not '.' in enginepath:
-                enginepath = 'nomad.engine.' + enginepath
-        except KeyError:
-            raise NomadError('nomad.engine is not defined in config file')
-
-        try:
-            enginemod = __import__(enginepath, {}, {}, [''])
-        except ImportError as e:
-            raise NomadError('cannot use engine %s: %s' % (enginepath, e))
-
-        try:
-            self.url = geturl(self.conf['nomad']['url'])
-        except KeyError:
-            abort('database url in %s is not found' % self)
-
-        self.engine = getattr(enginemod, 'engine')(self.url)
-        try:
-            self.engine.connection
-        except DBError as e:
-            abort(e)
+        self.engine, self.url = get_engine(self.conf)
 
     def __repr__(self):
         return '<%s: %s>' % (type(self).__name__, self.path)
@@ -94,17 +98,12 @@ class Repository(object):
 
     @cachedproperty
     def appliednames(self):
-       return [x for (x, ) in
-               self.engine.query('SELECT name FROM %s ORDER BY date' %
-                                 self.conf['nomad']['table'])]
+        q = 'SELECT name FROM %s ORDER BY date' % self.conf['nomad']['table']
+        return [x for (x, ) in self.engine.query(q)]
 
     @property
     def applied(self):
         return [self.get(x) for x in self.appliednames]
-
-    def get_env(self):
-        return dict(('NOMAD_' + k.upper(), v)
-                    for k, v in self.conf['nomad'].items())
 
 
 class Migration(object):
@@ -119,15 +118,10 @@ class Migration(object):
     def __init__(self, repo, name):
         self.repo = repo
         self.name = name
-        self.conf = ConfigParser(
-            interpolation=ExtendedInterpolation(),
-            defaults={
-                'confpath': op.abspath(self.repo.confpath),
-                'confdir': op.dirname(op.abspath(self.repo.confpath)),
-                'dir': op.abspath(op.join(repo.path, name))
-            })
+        self.conf = copy(self.repo.conf)
         self.conf.read([op.join(repo.path, name, 'migration.ini')])
-        deps = self.conf.get('nomad', 'dependencies', fallback='').split(',')
+        self.conf.set('nomad', 'dir', op.abspath(op.join(self.repo.path, name)))
+        deps = self.repo.conf.get('nomad', 'dependencies', fallback='').split(',')
         self._deps = [x.strip() for x in deps if x.strip()]
 
         self.exists = op.exists(op.join(repo.path, name))
@@ -142,6 +136,16 @@ class Migration(object):
         if isinstance(other, Migration) and self.repo == other.repo:
             return humankey(self.name) < humankey(other.name)
         raise TypeError('Migrations can be compared only with other migrations')
+
+    def get_config_dict(self):
+        return dict((k, dict(self.conf.items(k))) for k in self.conf.sections())
+
+    def get_env(self):
+        envs = {}
+        for k, d in self.get_config_dict().items():
+            for i, v in d.items():
+                envs['%s_%s' % (k.upper(), i.upper())] = v
+        return envs
 
     @property
     def path(self):
@@ -170,11 +174,20 @@ class Migration(object):
                     self.repo.engine.query(clean_sql(f.read()), escape=True)
                 print('  sql migration applied: %s' % fn)
 
+            elif fn.endswith('.j2'):
+                import jinja2
+                j2_env = jinja2.Environment(
+                    loader=jinja2.FileSystemLoader(os.path.dirname(path))
+                )
+                j2_sql = j2_env.get_template(fn).render(self.get_config_dict())
+                self.repo.engine.query(clean_sql(j2_sql), escape=True)
+                print('  sql template migration applied: %s' % fn)
+
             elif os.access(path, os.X_OK) and not op.isdir(path):
                 callenv = dict(os.environ,
                                # for backward compatibility
                                NOMAD_DBURL=self.repo.url,
-                               **self.repo.get_env())
+                               **self.get_env())
                 if env:
                     callenv.update(env)
                 retcode = call(path, env=callenv)

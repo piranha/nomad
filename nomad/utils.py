@@ -1,7 +1,8 @@
 from __future__ import print_function
 import sys
 import re
-import os, os.path as op
+import os
+import os.path as op
 import shlex
 import imp
 import json
@@ -21,6 +22,7 @@ NUM_RE = re.compile('(\d+)')
 
 class NomadError(Exception):
     pass
+
 
 class NomadIniNotFound(Exception):
     pass
@@ -54,20 +56,20 @@ def shsplit(s):
 
 
 def humankey(fn):
-  '''Turn a string into a list of substrings and numbers.
+    '''Turn a string into a list of substrings and numbers.
 
-  This can be used as a key function for ``sorted``::
+    This can be used as a key function for ``sorted``::
 
-    >>> s = lambda *x: list(sorted(x, key=humankey))
-    >>> print(s('up-1', 'up-5', 'up-15', 'up-50'))
-    ['up-1', 'up-5', 'up-15', 'up-50']
-    >>> print(s('up-1.sql', 'up.sql', 'up1.sql'))
-    ['up.sql', 'up1.sql', 'up-1.sql']
-    >>> print(s('up.rb', 'up.py')) # check extension sorting
-    ['up.py', 'up.rb']
-  '''
-  fn, ext = os.path.splitext(fn)
-  return [int(s) if s.isdigit() else s for s in NUM_RE.split(fn)], ext
+        >>> s = lambda *x: list(sorted(x, key=humankey))
+        >>> print(s('up-1', 'up-5', 'up-15', 'up-50'))
+        ['up-1', 'up-5', 'up-15', 'up-50']
+        >>> print(s('up-1.sql', 'up.sql', 'up1.sql'))
+        ['up.sql', 'up1.sql', 'up-1.sql']
+        >>> print(s('up.rb', 'up.py')) # check extension sorting
+        ['up.py', 'up.rb']
+    '''
+    fn, ext = os.path.splitext(fn)
+    return [int(s) if s.isdigit() else s for s in NUM_RE.split(fn)], ext
 
 
 def loadpath(path):
@@ -86,8 +88,8 @@ def clean_sql(sql):
     return '\n'.join(x for x in sql.split('\n')
                      if not x.strip().startswith('--'))
 
-### URL retrievers
 
+# URL retrievers
 def get_python(path):
     pypath, attr = path.split(':')
     if '/' in pypath or pypath.endswith('.py'):

@@ -37,6 +37,11 @@ Your directory tree thus will look like this::
       1-pre.py
       2-up.sql
       3-post.py
+    2011-11-13-third-migration/
+      migration.ini
+      1-pre.py
+      2-up.sql
+      3-post.sql.j2
 
 Nomad uses table called ``nomad`` to track what was applied already. It's just a
 list of applied migrations and dates when they were applied.
@@ -73,21 +78,47 @@ going to alter, or just to make it easier - on the latest available migration.
 Usage
 -----
 
-Idea is that you put your migrations in ``.sql`` files (name does not matter,
-and if there are few - they are executed in order), or in some executable
-file. It seems that first case is self-explanatory - you just put SQL commands
-you need to execute there and they will be executed.
+There are three types of migration files that ``nomad`` supports:
 
-In second case it's your job to do whatever is necessary to migrate your data,
-starting with establishing connection. To facilitate this, Nomad will pass
-everything you define in `Configuration`_ as environment variables, prefixed
-with ``NOMAD_``, so at least you will get ``NOMAD_ENGINE`` and ``NOMAD_URL`` -
-feel free to add more configuration there.
+1.  Plain SQL files with the extension ``.sql``. Just put SQL commands you need
+    to execute in the migration folder and they will be executed.
+2.  Executable files. All file extensions are supported as long as the file
+    is executable. These files must contain everything necessary to migrate
+    your data, including setting up a database connection. ``nomad`` will pass
+    all of the `Configuration`_ variables as environmental variables, prefixed
+    with their section.
+3.  Template files with the extension ``.j2``. These templates will be
+    passed through the Jinja2 templating library. You must install the
+    ``jinja2`` library for this functionality. The entire `Configuration`_ is
+    available to the template files as a single dictionary. These could be
+    useful if you are distributing an application where the end user needs to
+    control some aspects of the migrations (ie. additional database users and
+    passwords, additonal database names, etc.).
+
+    ::
+
+      # nomad.ini
+      [db]
+      another_user = reader
+      another_pass = pass
+
+    ::
+
+      # migrations/0001-initial/up.sql.j2
+      CREATE ROLE {{ db.another_user }};
+      ALTER ROLE {{ db.another_user }} WITH NOSUPERUSER LOGIN PASSWORD '{{ db.another_pass }}' VALID UNTIL 'infinity';
+
+
+Files inside of each migration folder are executed in lexographical order.
+
 
 Configuration
 -------------
 
-Nomad reads configuration from ``nomad.ini``, here is an example::
+Nomad reads database connection information from the ``[nomad]`` section of the
+``nomad.ini`` file.
+
+::
 
   [nomad]
   engine = sqla
@@ -103,16 +134,42 @@ Possible configuration options:
 - ``url`` (required) - URL to database, takes multiple options, see format below
 - ``path`` - path to migrations (default: directory with ``nomad.ini``)
 
-Each migration has its own ``migration.ini`` file, which at the moment has
+Each migration has its own ``migration.ini`` file, which, by default, has a
 single configuration option, ``nomad.dependencies``, defining which migration
 (or migrations) this one depends.
 
+You may add your own configuration variables to either the ``nomad.ini`` or
+``migration.ini`` files and they will be available in your jinja2 templates
+as a single dictionary and your executable files as environmental
+variables.
+
 Note that ini-files are parsed with extended interpolation (use it like
-``${var}`` or ``${section.var}``), few predefined variables are provided:
+``${var}`` or ``${section.var}``).
+
+A few predefined variables are provided to every migration:
 
 - ``confpath`` - path to ``nomad.ini``
 - ``confdir`` - path to directory, containing ``nomad.ini``
-- ``dir`` (migration only) - path to directory of migration
+- ``dir`` - path to directory of migration
+
+
+Example configuration:
+
++------------------+---------------------------+------------------------------+
+|   configration   |         executable        |          template            |
++==================+===========================+==============================+
+| ::               | ::                        | ::                           |
+|                  |                           |                              |
+|   [nomad]        |   NOMAD_ENGINE = sqla     |   nomad.engine = sqla        |
+|   engine = sqla  |   NOMAD_URL = someurl     |   nomad.url = someurl        |
+|   url = someurl  |                           |                              |
+|                  |   FOO_BAR = zeta          |   foo.bar = zeta             |
+|   [foo]          |                           |                              |
+|   bar = zeta     |   NOMAD_CONFPATH = path   |   nomad.confpath = path      |
+|                  |   NOMAD_CONFDIR = dir1    |   nomad.confdir = dir1       |
+|                  |   NOMAD_DIR = dir2        |   nomad.dir = dir2           |
++------------------+---------------------------+------------------------------+
+
 
 URL format
 ~~~~~~~~~~
@@ -151,7 +208,7 @@ normal format, i.e. ``dbtype://user:pass@host:port/dbname?options``.
 will do ``set ...`` before every migration. Note that if you do not supply
 anything there, nomad sets ``statement_timeout`` to 1000 ms and ``lock_timeout``
 to 500 ms by default.
-  
+
 Main ideas
 ----------
 
@@ -161,7 +218,7 @@ Main ideas
   track applied migrations and dependencies.
 - ``.sql`` is treated differently and executed against database, configured in
   ``nomad.ini``.
-- Only ``.sql`` and executable files (sorry, Windows! - though I am eager to
+- Only ``.sql``, ``.j2``, and executable files (sorry, Windows! - though I am eager to
   hear ideas how to support it) are executed. You can put READMEs, pieces of
   documentation, whatever you want alongside your migrations.
 - Name matters - everything is executed in order. Order is determined by using
