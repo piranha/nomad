@@ -89,8 +89,24 @@ There are three types of migration files that ``nomad`` supports:
     with their section.
 3.  Template files with the extension ``.j2``. These templates will be
     passed through the Jinja2 templating library. You must install the
-    ``jinja2`` for this functionality. The entire `Configuration`_ is available
-    to the template files as a single dictionary.
+    ``jinja2`` library for this functionality. The entire `Configuration`_ is
+    available to the template files as a single dictionary. These could be
+    useful if you are distributing an application where the end user needs to
+    control some aspects of the migrations (ie. additional database users and
+    passwords, additonal database names, etc.).
+
+    ::
+
+      # nomad.ini
+      [db]
+      another_user = reader
+      another_pass = pass
+
+    ::
+
+      # migrations/0001-initial/up.sql.j2
+      CREATE ROLE {{ db.another_user }};
+      ALTER ROLE {{ db.another_user }} WITH NOSUPERUSER LOGIN PASSWORD '{{ db.another_pass }}' VALID UNTIL 'infinity';
 
 
 Files inside of each migration folder are executed in lexographical order.
