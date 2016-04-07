@@ -90,7 +90,7 @@ There are three types of migration files that ``nomad`` supports:
 3.  Template files with the extension ``.j2``. These templates will be
     passed through the Jinja2 templating library. You must install the
     ``jinja2`` for this functionality. The entire `Configuration`_ is available
-    to the tempalte files as a single dictionary.
+    to the template files as a single dictionary.
 
 
 Files inside of each migration folder are executed in lexographical order.
@@ -99,8 +99,8 @@ Files inside of each migration folder are executed in lexographical order.
 Configuration
 -------------
 
-Nomad reads database connection informatino from the ``[nomad]``
-section of the ``nomad.ini`` file.
+Nomad reads database connection information from the ``[nomad]`` section of the
+``nomad.ini`` file.
 
 ::
 
