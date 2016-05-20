@@ -2,6 +2,11 @@
  Nomad Changelog
 =================
 
+1.19
+----
+
+- You can now write migrations as Jinja2 templates
+
 1.18
 ----
 
