@@ -25,6 +25,9 @@ class Connection(object):
     def fetch(self, cursor):
         return cursor.fetchall()
 
+    def set_isolation_level(self, isolation_level):
+        pass
+
     def query(self, statement, *args):
         statement = self.prepare(statement)
         c = self.connection.cursor()
@@ -114,6 +117,15 @@ class Pgsql(Connection):
         self.exc = psycopg2.Error
         Connection.__init__(self)
 
+        self.default_isolation_level = self.connection.isolation_level
+        self.isolation_levels = [
+            psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT,
+            psycopg2.extensions.ISOLATION_LEVEL_READ_UNCOMMITTED,
+            psycopg2.extensions.ISOLATION_LEVEL_READ_COMMITTED,
+            psycopg2.extensions.ISOLATION_LEVEL_REPEATABLE_READ,
+            psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE,
+        ]
+
     def connect(self):
         try:
             return self.module.connect(**self.parameters)
@@ -122,6 +134,20 @@ class Pgsql(Connection):
 
     def prepare(self, statement):
         return statement.replace('?', '%s')
+
+    def set_isolation_level(self, isolation_level):
+        # http://initd.org/psycopg/docs/extensions.html#psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
+        isolation_level = isolation_level or self.default_isolation_level
+        try:
+            isolation_level = int(isolation_level)
+        except (TypeError, ValueError):
+            isolation_level = None
+
+        if isolation_level is None:
+            return
+
+        if isolation_level in self.isolation_levels:
+            self.connection.set_isolation_level(isolation_level)
 
     def fetch(self, cursor):
         if cursor.rowcount == -1:
