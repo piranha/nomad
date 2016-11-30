@@ -136,7 +136,6 @@ class Pgsql(Connection):
         return statement.replace('?', '%s')
 
     def set_isolation_level(self, isolation_level):
-        # http://initd.org/psycopg/docs/extensions.html#psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
         isolation_level = isolation_level or self.default_isolation_level
         try:
             isolation_level = int(isolation_level)
