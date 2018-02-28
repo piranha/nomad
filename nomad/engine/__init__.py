@@ -19,6 +19,9 @@ class BaseEngine(object):
     def query(self, statement, *args, **kwargs):
         raise NotImplementedError()
 
+    def nobegin(self):
+        self.connection.nobegin()
+
     def begin(self):
         self.connection.begin()
 

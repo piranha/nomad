@@ -2,7 +2,6 @@ from sqlalchemy import create_engine, exc
 
 from nomad.engine import BaseEngine, DBError
 
-
 class SAEngine(BaseEngine):
     def connect(self):
         return create_engine(self.url)
@@ -22,6 +21,12 @@ class SAEngine(BaseEngine):
             raise DBError(str(e))
 
     begin = rollback = commit = lambda self: None
+
+    def nobegin(self):
+        """TODO:
+        http://docs.sqlalchemy.org/en/latest/orm/session_transaction.html#setting-transaction-isolation-levels
+        """
+        raise Exception('Not implemented')
 
 
 engine = SAEngine

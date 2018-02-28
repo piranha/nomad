@@ -37,6 +37,9 @@ class Connection(object):
         c.close()
         return data
 
+    def nobegin(self):
+        pass
+
     def begin(self):
         pass
 
@@ -110,6 +113,7 @@ class Pgsql(Connection):
             self.options = ['statement_timeout=1000', 'lock_timeout=500']
 
         import psycopg2
+        import psycopg2.extensions
         self.module = psycopg2
         self.exc = psycopg2.Error
         Connection.__init__(self)
@@ -132,9 +136,16 @@ class Pgsql(Connection):
             return []
 
     def begin(self):
+        self.connection.set_isolation_level(
+            self.module.extensions.ISOLATION_LEVEL_DEFAULT)
         c = self.connection.cursor()
         c.executemany(['BEGIN'] + ['set ' + x for x in self.options], [])
         c.close()
+
+    def nobegin(self):
+        self.connection.set_isolation_level(
+            self.module.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+
 
 CONNECTORS = {'sqlite': Sqlite, 'mysql': Mysql,
               'pgsql': Pgsql, 'postgresql': Pgsql, 'postgres': Pgsql}

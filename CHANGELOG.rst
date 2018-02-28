@@ -2,6 +2,12 @@
  Nomad Changelog
 =================
 
+1.20
+----
+
+- It is now possible to specify `transaction = no` in `migration.ini` to apply
+  `CREATE INDEX CONCURRENTLY`. Beware - it needs to be one index per file.
+
 1.19
 ----
 

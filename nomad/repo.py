@@ -17,7 +17,14 @@ def tx(getrepo):
         @wraps(f)
         def inner(self, *args, **kwargs):
             repo = getrepo(self)
+            tx = self.conf.getboolean('nomad', 'transaction', fallback=True)
+
+            if tx is False:
+                repo.engine.nobegin()
+                return f(self, *args, **kwargs)
+
             try:
+                print('begin')
                 repo.engine.begin()
                 f(self, *args, **kwargs)
                 repo.engine.commit()
