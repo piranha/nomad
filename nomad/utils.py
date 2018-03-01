@@ -6,6 +6,7 @@ import os.path as op
 import shlex
 import imp
 import json
+from functools import reduce
 from subprocess import Popen, PIPE
 from configparser import ConfigParser, ExtendedInterpolation
 
