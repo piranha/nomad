@@ -24,7 +24,6 @@ def tx(getrepo):
                 return f(self, *args, **kwargs)
 
             try:
-                print('begin')
                 repo.engine.begin()
                 f(self, *args, **kwargs)
                 repo.engine.commit()

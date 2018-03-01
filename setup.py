@@ -4,7 +4,7 @@ import sys, os, re
 from setuptools import setup, find_packages
 
 
-DEPS = ['opster>=4.0', 'termcolor']
+DEPS = ['opster>=4.0', 'termcolor==1.1.0']
 extra = {}
 
 if sys.version_info[0] >= 3:
@@ -13,7 +13,7 @@ if sys.version_info[0] >= 3:
         convert_2to3_doctests=['nomad/utils.py'],
     ))
 else:
-    DEPS.append('configparser')
+    DEPS.append('configparser==3.5.0')
 
 
 def read(fname):
