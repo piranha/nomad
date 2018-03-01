@@ -74,7 +74,7 @@ class Repository(object):
         if not self.conf.read([confpath]):
             raise NomadIniNotFound(confpath)
 
-        for k, v in (overrides or {}).iteritems():
+        for k, v in (overrides or {}).items():
             section, key = k.split('.')
             self.conf.set(section, key, v)
 
