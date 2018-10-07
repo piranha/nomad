@@ -109,7 +109,7 @@ There are three types of migration files that ``nomad`` supports:
       ALTER ROLE {{ db.another_user }} WITH NOSUPERUSER LOGIN PASSWORD '{{ db.another_pass }}' VALID UNTIL 'infinity';
 
 
-Files inside of each migration folder are executed in lexographical order.
+Files inside of each migration folder are executed in lexicographical order.
 
 
 Configuration
