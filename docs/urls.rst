@@ -14,8 +14,7 @@ SQLAlchemy library.
 
 URL can be specified in few different ways:
 
- - ``url`` - just a string, path like ``sqlite:///test.db`` or
-   ``mysql://user:pass@host/db``
+ - ``url`` - just a string, path like ``sqlite:///test.db`` (*relative* path) or ``sqlite:////path/to/test.db`` or ``mysql://user:pass@host/db``. Note how you end up with **4** slashes when using absolute path.
 
  - ``url-python`` - taking variable from Python module, has two approaches to
    fetching python module:
