@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import setup as appsetup
 import sys
 sys.path.insert(0, '..')
-import setup as appsetup
 
 extensions = ['sphinx.ext.todo', 'sphinx.ext.viewcode', 'sphinx.ext.autodoc']
 source_suffix = '.rst'

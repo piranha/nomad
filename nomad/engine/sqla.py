@@ -2,6 +2,7 @@ from sqlalchemy import create_engine, exc
 
 from nomad.engine import BaseEngine, DBError
 
+
 class SAEngine(BaseEngine):
     def connect(self):
         return create_engine(self.url)
