@@ -2,5 +2,6 @@
 /nomad.egg-info/
 /dist/
 /docs/_build/
+/docs/.doctrees/
 MANIFEST
 /_py3/

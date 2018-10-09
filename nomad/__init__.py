@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import os, os.path as op, sys
+import os
+import os.path as op
+import sys
 from datetime import date
 
 from opster import Dispatcher
@@ -44,6 +46,7 @@ def getconfig(func):
 
         return func(repo=repo, *args, **kwargs)
     return inner
+
 
 app = Dispatcher(globaloptions=GLOBAL, middleware=getconfig)
 
@@ -116,7 +119,7 @@ def create(name,
 def apply(all=('a', False, 'apply all available migrations'),
           init=('', False, 'init if not initialized yet'),
           env=('e', [], 'list of additional environment variables'),
-          fake=('', False, 'record migration as applied, but do not do anything'),
+          fake=('', False, 'record migration as applied, but do nothing'),
           *names,
           **opts):
     '''Apply migration and all of it dependencies
