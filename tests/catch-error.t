@@ -24,7 +24,10 @@ Check that wrong migration is not applied::
   $ $NOMAD create 0-first
   $ echo "create table create (value qqq);" > 0-first/up.sql
   $ $NOMAD apply -a
-  \x1b[31mError: cannot apply migration 0-first: (sqlite3.OperationalError) near "create": syntax error [SQL: 'create table create (value qqq);\\n']\x1b[0m (esc)
+  \x1b[31mError: cannot apply migration 0-first: (sqlite3.OperationalError) near "create": syntax error (esc)
+  [SQL: create table create (value qqq);
+  ]
+  (Background on this error at: http://sqlalche.me/e/e3q8)\x1b[0m (esc)
   applying migration 0-first:
   [1]
   $ sqlite3 test.db 'select name from nomad'
