@@ -138,7 +138,7 @@ def get_yaml(path):
     except ImportError:
         abort('Please, install PyYAML to parse YAML config.')
     fn, path = path.split(':')
-    obj = yaml.load(open(fn))
+    obj = yaml.load(open(fn), Loader=yaml.BaseLoader)
     path = map(lambda x: int(x) if x.isdigit() else x, path.split('.'))
     return reduce(lambda x, y: x[y], path, obj)
 
