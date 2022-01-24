@@ -2,6 +2,15 @@
  Nomad Changelog
 =================
 
+1.21
+----
+
+- Dependencies are pinned now
+- Fixed Python 3 warnings about `imp` being deprecated
+- Some docstring updates
+- Dropped support for Python 2.6
+- Fixed bug with iteritems in Python 3
+
 1.20
 ----
 
