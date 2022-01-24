@@ -4,7 +4,6 @@ import re
 import os
 import os.path as op
 import shlex
-import imp
 import json
 from functools import reduce
 from subprocess import Popen, PIPE
@@ -12,11 +11,20 @@ from configparser import ConfigParser, ExtendedInterpolation
 
 from termcolor import cprint
 
+
+try:
+    import importlib
+except ImportError:
+    importlib = None
+    import imp
+
+
 if sys.version_info[0] == 3:
     shell_split = shlex.split
 else:
     def shell_split(cmd):
         return shlex.split(cmd.encode('utf-8'))
+
 
 NUM_RE = re.compile('(\d+)')
 
@@ -73,10 +81,18 @@ def humankey(fn):
     return [int(s) if s.isdigit() else s for s in NUM_RE.split(fn)], ext
 
 
+
 def loadpath(path):
     modname = 'nomad_url_%s' % path.replace('/', '_').replace('.', '_')
     path = op.expanduser(op.expandvars(path))
-    if op.isdir(path):
+    if importlib:
+        if not path.endswith('.py'):
+            path = op.join(path, '__init__.py')
+        spec = importlib.util.spec_from_file_location(modname, path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+    elif op.isdir(path):
         # path/__init__.py
         d, f = op.split(path.rstrip('/'))
         fd, fpath, desc = imp.find_module(f, [d])
