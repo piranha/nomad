@@ -9,12 +9,7 @@ from setuptools import setup, find_packages
 DEPS = ['opster>=4.0', 'termcolor==1.1.0']
 extra = {}
 
-if sys.version_info[0] >= 3:
-    extra.update(dict(
-        use_2to3=True,
-        convert_2to3_doctests=['nomad/utils.py'],
-    ))
-else:
+if sys.version_info[0] < 3:
     DEPS.append('configparser==3.5.0')
 
 

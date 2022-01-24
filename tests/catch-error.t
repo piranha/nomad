@@ -27,7 +27,7 @@ Check that wrong migration is not applied::
   \x1b[31mError: cannot apply migration 0-first: (sqlite3.OperationalError) near "create": syntax error (esc)
   [SQL: create table create (value qqq);
   ]
-  (Background on this error at: http://sqlalche.me/e/e3q8)\x1b[0m (esc)
+  (Background on this error at: https://sqlalche.me/e/14/e3q8)\x1b[0m (esc)
   applying migration 0-first:
   [1]
   $ sqlite3 test.db 'select name from nomad'
