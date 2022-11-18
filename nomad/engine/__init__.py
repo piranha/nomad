@@ -5,7 +5,7 @@ class BaseEngine(object):
         self.url = url
 
     def __repr__(self):
-        return '<%s: %s>' % (type(self).__name__, self.url)
+        return "<%s: %s>" % (type(self).__name__, self.url)
 
     @property
     def connection(self):
@@ -33,16 +33,21 @@ class BaseEngine(object):
 
     @property
     def datetime_type(self):
-        if self.url.startswith('pgsql') or self.url.startswith('postgresql'):
-            return 'timestamp'
-        return 'datetime'
+        if self.url.startswith("pgsql") or self.url.startswith("postgresql"):
+            return "timestamp"
+        if self.url.startswith("mssql+pyodbc") or self.url.startswith("pyodbc"):
+            return "datetime2"
+        return "datetime"
 
     def init(self, tablename):
-        self.query('''CREATE TABLE %s (
+        self.query(
+            """CREATE TABLE %s (
             name varchar(255) NOT NULL,
             date %s NOT NULL
-        )''' % (tablename, self.datetime_type))
+        )"""
+            % (tablename, self.datetime_type)
+        )
 
 
 class DBError(Exception):
-    '''Database exception in nomad'''
+    """Database exception in nomad"""
