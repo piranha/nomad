@@ -2,6 +2,11 @@
  Nomad Changelog
 =================
 
+1.22
+----
+
+- Fix to work with SQL Server
+
 1.21
 ----
 
