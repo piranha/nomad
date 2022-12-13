@@ -1,4 +1,5 @@
 from __future__ import print_function
+import sys
 import os
 import os.path as op
 from copy import copy
@@ -212,8 +213,8 @@ class Migration(object):
                 process = subprocess.run(
                     path, env=callenv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
                 )
-                if process.retcode:
-                    print(process.stdout if stdout is not None else "")
+                if process.returncode:
+                    print(process.stdout if stdout is not None else "", file=sys.stderr)
                     raise DBError("script failed: %s" % fn)
                 print("  script migration applied: %s" % fn)
 
