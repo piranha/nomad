@@ -215,7 +215,7 @@ class Migration(object):
                 )
                 if process.returncode:
                     print(
-                        process.stdout if process.stdout is not None else "",
+                        process.stdout.decode() if process.stdout is not None else "",
                         file=sys.stderr,
                     )
                     raise DBError("script failed: %s" % fn)
