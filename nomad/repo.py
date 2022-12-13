@@ -214,7 +214,10 @@ class Migration(object):
                     path, env=callenv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
                 )
                 if process.returncode:
-                    print(process.stdout if stdout is not None else "", file=sys.stderr)
+                    print(
+                        process.stdout if process.stdout is not None else "",
+                        file=sys.stderr,
+                    )
                     raise DBError("script failed: %s" % fn)
                 print("  script migration applied: %s" % fn)
 
