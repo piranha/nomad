@@ -1,4 +1,6 @@
 PWD = $(shell pwd)
+VERSION = $(shell grep '__version__ =' nomad/__init__.py | cut -d ' ' -f 3 | tr -d "'")
+
 #TEST_ARGS ?= --keep-tmpdir
 
 .PHONY: help docs test itest
@@ -24,4 +26,5 @@ itest:
 	cram -i tests/*.t
 
 pub:
-	python setup.py sdist upload
+	python setup.py sdist
+	twine upload dist/nomad-$(VERSION).tar.gz
