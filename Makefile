@@ -19,8 +19,8 @@ open:
 	cd docs && make open
 
 test:
-	python nomad/utils.py
-	PYTHONPATH=$(PWD) NOMAD="python $(PWD)/nomad/__init__.py" cram $(TEST_ARGS) tests/*.t
+	python3 nomad/utils.py
+	PYTHONPATH=$(PWD) NOMAD="python3 $(PWD)/nomad/__init__.py" cram $(TEST_ARGS) tests/*.t
 
 itest:
 	cram -i tests/*.t

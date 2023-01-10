@@ -1,5 +1,8 @@
-import urlparse
 import urllib
+try:
+    import urllib.parse as urlparse
+except ImportError:
+    import urlparse
 
 from nomad.engine import BaseEngine, DBError
 

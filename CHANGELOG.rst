@@ -2,6 +2,8 @@
  Nomad Changelog
 =================
 
+- Fix importing `urllib.parse` in Python 3
+
 1.22
 ----
 
