@@ -7,6 +7,7 @@ Basic nomad tests
 
 First, set up environment::
 
+  $ export FORCE_COLOR=1
   $ NOMAD=${NOMAD:-nomad}
   $ cat > nomad.ini <<EOF
   > [nomad]
@@ -41,6 +42,8 @@ Upgrading::
   $ sqlite3 test.db '.schema test'
   CREATE TABLE test (value varchar(10));
   $ sqlite3 test.db 'select name from nomad'
+  name   
+  -------
   0-first
 
 Dependencies::
@@ -89,6 +92,8 @@ It's possible to insert % into a db::
   applying migration 12-thirteen:
     sql migration applied: up.sql
   $ sqlite3 test.db 'select * from test'
+  value
+  -----
   test%
 
 Using configuration templates
@@ -104,4 +109,6 @@ Using configuration templates
   applying migration 14-fifteen:
     sql template migration applied: up.sql.j2
   $ sqlite3 test.db 'select value from zeta'
-  test
+  value
+  -----
+  test 

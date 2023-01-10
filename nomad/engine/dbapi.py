@@ -1,8 +1,4 @@
-import urllib
-try:
-    import urllib.parse as urlparse
-except ImportError:
-    import urlparse
+import urllib, urllib.parse
 
 from nomad.engine import BaseEngine, DBError
 
@@ -156,7 +152,7 @@ CONNECTORS = {'sqlite': Sqlite, 'mysql': Mysql,
 
 class DBEngine(BaseEngine):
     def connect(self):
-        p = urlparse.urlparse(self.url)
+        p = urllib.parse.urlparse(self.url)
         if p.scheme not in CONNECTORS:
             raise DBError('scheme "%s" not supported' % p.scheme)
         return CONNECTORS[p.scheme](p)

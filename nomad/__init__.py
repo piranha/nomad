@@ -77,13 +77,11 @@ def list_(all=('a', False, 'show all migrations (default: only non-applied)'),
             if all:
                 cprint(m, 'magenta')
         else:
-            out = colored(m, 'green')
-            deps = []
-            for dep in m.dependencies:
-                if dep not in repo.applied:
-                    deps.append(dep)
+            out = colored(str(m), 'green')
+            deps = ', '.join(str(dep) for dep in m.dependencies
+                             if dep not in repo.applied)
             if deps:
-                out += ' (%s)' % ', '.join(map(str, deps))
+                out += ' (%s)' % deps
             print(out)
 
 

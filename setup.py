@@ -6,7 +6,7 @@ import re
 from setuptools import setup, find_packages
 
 
-DEPS = ['opster==4.2', 'termcolor==1.1.0']
+DEPS = ['opster==5.0', 'termcolor==2.2.0']
 extra = {}
 
 if sys.version_info[0] < 3:

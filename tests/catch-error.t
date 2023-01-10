@@ -10,6 +10,7 @@ about migration is inserted into a DB.
 
 Set up environment::
 
+  $ export FORCE_COLOR=1
   $ NOMAD=${NOMAD:-nomad}
   $ cat > nomad.ini <<EOF
   > [nomad]
@@ -41,7 +42,7 @@ Check that callable migrations are also checked for error::
   > EOF
   $ chmod +x 0-first/up.sh
   $ $NOMAD apply -a
-  Error: near "create": syntax error
+  Error: in prepare, near "create": syntax error (1)
   \x1b[31mError: cannot apply migration 0-first: script failed: up.sh\x1b[0m (esc)
   applying migration 0-first:
   [1]

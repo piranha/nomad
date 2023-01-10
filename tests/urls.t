@@ -9,6 +9,7 @@ Test different methods to acquire URLs.
 
 Directly specified URL::
 
+  $ export FORCE_COLOR=1
   $ NOMAD=${NOMAD:-nomad}
   $ cat > nomad.ini <<EOF
   > [nomad]

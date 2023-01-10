@@ -18,13 +18,22 @@ docs:
 open:
 	cd docs && make open
 
+
 test:
-	python3 nomad/utils.py
-	PYTHONPATH=$(PWD) NOMAD="python3 $(PWD)/nomad/__init__.py" cram $(TEST_ARGS) tests/*.t
+	test -d .env && source .env/bin/activate; \
+	python nomad/utils.py; \
+	PYTHONPATH=$(PWD) NOMAD="python $(PWD)/nomad/__init__.py" prysk $(TEST_ARGS) tests/*.t
 
 itest:
-	cram -i tests/*.t
+	test -d .env && source .env/bin/activate; \
+	prysk -i tests/*.t
 
 pub:
 	python setup.py sdist
 	twine upload dist/nomad-$(VERSION).tar.gz
+
+
+.env: requirements-dev.txt
+	test -d $@ || python3 -m venv $@
+	.env/bin/pip install -r requirements-dev.txt
+	@touch $@
