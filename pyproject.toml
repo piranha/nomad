@@ -1,3 +1,38 @@
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = 'nomad'
+description = 'simple sql migration tool to save you from becoming mad'
+readme = 'README.rst'
+license.file = 'LICENSE'
+requires-python = '>=3.2'
+dynamic = ["version"]
+authors = [{name = 'Alexander Solovyov', email = 'alexander@solovyov.net'}]
+classifiers = [
+    'Environment :: Console',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: BSD License',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python',
+    'Topic :: Software Development',
+    'Topic :: Software Development :: Version Control',
+    'Topic :: Database',
+]
+dependencies = ['opster==5.0', 'termcolor==2.2.0']
+optional-dependencies.test = [
+    'SQLAlchemy==1.4.31',
+    'prysk==0.12.2',
+    'PyYAML==6.0',
+    'jinja2==3.0.3',
+]
+
+[project.scripts]
+nomad = 'nomad.app:dispatch'
+
+[project.urls]
+'Homepage' = 'http://github.com/piranha/nomad/'
+
+[tool.setuptools.dynamic]
+version = {attr = "nomad.__version__"}

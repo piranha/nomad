@@ -2,6 +2,9 @@
  Nomad Changelog
 =================
 
+2.0
+---
+
 - Drop Python 2 support
 - Fix importing `urllib.parse` in Python 3
 

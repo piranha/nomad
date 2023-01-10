@@ -26,10 +26,11 @@ test:
 
 itest:
 	test -d .env && source .env/bin/activate; \
-	prysk -i tests/*.t
+	PYTHONPATH=$(PWD) NOMAD="python $(PWD)/nomad/__init__.py" prysk -i $(TEST_ARGS) tests/*.t
 
 pub:
-	python setup.py sdist
+	pip install -q build
+	python3 -m build
 	twine upload dist/nomad-$(VERSION).tar.gz
 
 

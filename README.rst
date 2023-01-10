@@ -10,10 +10,10 @@ whatever you are using to access your database. It uses simple SQL scripts to
 migrate and can run pre- and post-processing routines written in any language
 (Python, Ruby or whatever do you use for your application).
 
-Tests status: |travis|, `changelog <https://github.com/piranha/nomad/blob/master/CHANGELOG.rst>`_
+Tests status: |ci|, `changelog <https://github.com/piranha/nomad/blob/master/CHANGELOG.rst>`_
 
-.. |travis| image:: https://travis-ci.org/piranha/nomad.png
-   :target: https://travis-ci.org/piranha/nomad
+.. |ci| image:: https://github.com/piranha/nomad/actions/workflows/build.yml/badge.svg
+   :target: https://github.com/piranha/nomad/actions
 
 .. begin-writeup
 

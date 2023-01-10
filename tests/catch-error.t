@@ -31,14 +31,14 @@ Check that wrong migration is not applied::
   (Background on this error at: https://sqlalche.me/e/14/e3q8)\x1b[0m (esc)
   applying migration 0-first:
   [1]
-  $ sqlite3 test.db 'select name from nomad'
+  $ sqlite3 -noheader -list test.db 'select name from nomad'
 
 Check that callable migrations are also checked for error::
 
   $ rm 0-first/up.sql
   $ cat > 0-first/up.sh <<EOF
   > #!/bin/sh
-  > sqlite3 test.db 'create table create (value qqq);'
+  > sqlite3 -noheader -list test.db 'create table create (value qqq);'
   > EOF
   $ chmod +x 0-first/up.sh
   $ $NOMAD apply -a
@@ -46,4 +46,4 @@ Check that callable migrations are also checked for error::
   \x1b[31mError: cannot apply migration 0-first: script failed: up.sh\x1b[0m (esc)
   applying migration 0-first:
   [1]
-  $ sqlite3 test.db 'select name from nomad'
+  $ sqlite3 -noheader -list test.db 'select name from nomad'

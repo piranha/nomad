@@ -6,3 +6,4 @@
 MANIFEST
 /_py3/
 /.env
+/build/

@@ -21,7 +21,7 @@ First, initialize migrations repository::
 
   $ $NOMAD init
   Versioning table initialized successfully
-  $ sqlite3 test.db '.schema'
+  $ sqlite3 -noheader -list test.db '.schema'
   CREATE TABLE nomad (
               name varchar(255) NOT NULL,
               date datetime NOT NULL
@@ -39,11 +39,9 @@ Upgrading::
   $ $NOMAD apply -a
   applying migration 0-first:
     sql migration applied: up.sql
-  $ sqlite3 test.db '.schema test'
+  $ sqlite3 -noheader -list test.db '.schema test'
   CREATE TABLE test (value varchar(10));
-  $ sqlite3 test.db 'select name from nomad'
-  name   
-  -------
+  $ sqlite3 -noheader -list test.db 'select name from nomad'
   0-first
 
 Dependencies::
@@ -91,9 +89,7 @@ It's possible to insert % into a db::
   $ $NOMAD apply -a
   applying migration 12-thirteen:
     sql migration applied: up.sql
-  $ sqlite3 test.db 'select * from test'
-  value
-  -----
+  $ sqlite3 -noheader -list test.db 'select * from test'
   test%
 
 Using configuration templates
@@ -108,7 +104,5 @@ Using configuration templates
     sql template migration applied: up.sql.j2
   applying migration 14-fifteen:
     sql template migration applied: up.sql.j2
-  $ sqlite3 test.db 'select value from zeta'
-  value
-  -----
-  test 
+  $ sqlite3 -noheader -list test.db 'select value from zeta'
+  test
