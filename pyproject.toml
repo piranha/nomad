@@ -29,7 +29,7 @@ optional-dependencies.test = [
 ]
 
 [project.scripts]
-nomad = 'nomad.app:dispatch'
+nomad = 'nomad:app.dispatch'
 
 [project.urls]
 'Homepage' = 'http://github.com/piranha/nomad/'

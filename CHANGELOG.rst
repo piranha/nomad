@@ -2,6 +2,11 @@
  Nomad Changelog
 =================
 
+2.1
+---
+
+- Fix generated command
+
 2.0
 ---
 
