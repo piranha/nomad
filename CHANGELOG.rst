@@ -2,6 +2,11 @@
  Nomad Changelog
 =================
 
+2.2
+---
+
+- `unquote` is `urllib.parse.unquote` argh
+
 2.1
 ---
 

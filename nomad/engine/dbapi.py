@@ -5,7 +5,7 @@ from nomad.engine import BaseEngine, DBError
 
 def unq(s):
     if isinstance(s, str):
-        return urllib.unquote(s)
+        return urllib.parse.unquote(s)
     return s
 
 
