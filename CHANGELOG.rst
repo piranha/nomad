@@ -2,6 +2,11 @@
  Nomad Changelog
 =================
 
+2.3
+---
+
+- Massive speedup for `nomad apply -a` (thanks @vsolovyov)
+
 2.2
 ---
 
