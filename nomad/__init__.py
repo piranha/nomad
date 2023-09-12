@@ -139,7 +139,8 @@ def apply(all=('a', False, 'apply all available migrations'),
     if names:
         migrations = [repo.get(x) for x in names]
     elif all:
-        migrations = [x for x in repo.available if x not in repo.applied]
+        applied = set(repo.applied)
+        migrations = [x for x in repo.available if x not in applied]
     else:
         abort('Supply names of migrations to apply')
 
