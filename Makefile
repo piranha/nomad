@@ -31,8 +31,7 @@ itest:
 pub:
 	pip install -q build
 	python3 -m build
-	twine upload dist/nomad-$(VERSION).tar.gz
-
+	twine upload dist/nomad-$(VERSION).tar.gz dist/nomad-$(VERSION)-py3-none-any.wheel
 
 .env: requirements-dev.txt
 	test -d $@ || python3 -m venv $@
