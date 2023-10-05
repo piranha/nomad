@@ -123,6 +123,7 @@ Nomad reads database connection information from the ``[nomad]`` section of the
   [nomad]
   engine = sqla
   url = pgsql://user:password@host:port/db
+  isolation_level = 1
 
 Possible configuration options:
 
@@ -133,6 +134,8 @@ Possible configuration options:
 
 - ``url`` (required) - URL to database, takes multiple options, see format below
 - ``path`` - path to migrations (default: directory with ``nomad.ini``)
+- ``isolation_level`` - do not use transaction for migration (only for ``dbapi`` with ``pgsql``)
+  more information here http://initd.org/psycopg/docs/extensions.html#isolation-level-constants
 
 Each migration has its own ``migration.ini`` file, which, by default, has a
 single configuration option, ``nomad.dependencies``, defining which migration

@@ -16,6 +16,9 @@ class BaseEngine(object):
     def connect(self):
         raise NotImplementedError()
 
+    def set_isolation_level(self, isolation_level):
+        self.connection.set_isolation_level(isolation_level)
+
     def query(self, statement, *args, **kwargs):
         raise NotImplementedError()
 
