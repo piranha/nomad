@@ -2,6 +2,11 @@
  Nomad Changelog
 =================
 
+2.4
+---
+
+- Massive speedup for `nomad ls` (thanks @jetmind)
+
 2.3
 ---
 

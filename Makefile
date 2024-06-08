@@ -19,21 +19,22 @@ open:
 	cd docs && make open
 
 
-test:
-	test -d .env && source .env/bin/activate; \
+test: .env
+	source .env/bin/activate; \
 	python nomad/utils.py; \
 	PYTHONPATH=$(PWD) NOMAD="python $(PWD)/nomad/__init__.py" prysk $(TEST_ARGS) tests/*.t
 
-itest:
-	test -d .env && source .env/bin/activate; \
+itest: .env
+	source .env/bin/activate; \
 	PYTHONPATH=$(PWD) NOMAD="python $(PWD)/nomad/__init__.py" prysk -i $(TEST_ARGS) tests/*.t
 
-pub:
-	pip install -q build
-	python3 -m build
-	twine upload dist/nomad-$(VERSION).tar.gz dist/nomad-$(VERSION)-py3-none-any.wheel
+pub: .env
+	source .env/bin/activate; \
+	pip install -q build twine; \
+	python -m build; \
+	twine upload dist/nomad-$(VERSION).tar.gz dist/nomad-$(VERSION)-py3-none-any.whl
 
-.env: requirements-dev.txt
+.env: pyproject.toml
 	test -d $@ || python3 -m venv $@
-	.env/bin/pip install -r requirements-dev.txt
+	.env/bin/pip install .[test]
 	@touch $@

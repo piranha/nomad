@@ -26,7 +26,7 @@ else:
         return shlex.split(cmd.encode('utf-8'))
 
 
-NUM_RE = re.compile('(\d+)')
+NUM_RE = re.compile(r'(\d+)')
 
 
 class NomadError(Exception):

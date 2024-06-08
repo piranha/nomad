@@ -22,10 +22,10 @@ classifiers = [
 ]
 dependencies = ['opster==5.0', 'termcolor==2.2.0']
 optional-dependencies.test = [
-    'SQLAlchemy==1.4.31',
-    'prysk==0.12.2',
-    'PyYAML==6.0',
-    'jinja2==3.0.3',
+    'SQLAlchemy==1.4.52',
+    'prysk==0.20.0',
+    'PyYAML==6.0.1',
+    'jinja2==3.1.4',
 ]
 
 [project.scripts]

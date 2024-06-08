@@ -42,7 +42,9 @@ Check that callable migrations are also checked for error::
   > EOF
   $ chmod +x 0-first/up.sh
   $ $NOMAD apply -a
-  Error: in prepare, near "create": syntax error (1)
+  Error: in prepare, near "create": syntax error
+    create table create (value qqq);
+                 ^--- error here
   \x1b[31mError: cannot apply migration 0-first: script failed: up.sh\x1b[0m (esc)
   applying migration 0-first:
   [1]
