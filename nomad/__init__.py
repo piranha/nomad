@@ -68,18 +68,20 @@ def list_(all=('a', False, 'show all migrations (default: only non-applied)'),
     '''List migrations
     '''
     repo = opts['repo']
-    all_migrations = repo.available + [m for m in repo.applied
-                                       if m not in repo.available]
+    available = set(repo.available)
+    applied = set(repo.applied)
+    # must print in order, so can't just union both sets
+    all_migrations = repo.available + [m for m in repo.applied if m not in available]
     for m in all_migrations:
-        if m not in repo.available:
+        if m not in available:
             print(colored(m, 'red') + ' (not on disk)')
-        elif m in repo.applied:
+        elif m in applied:
             if all:
                 cprint(m, 'magenta')
         else:
             out = colored(str(m), 'green')
             deps = ', '.join(str(dep) for dep in m.dependencies
-                             if dep not in repo.applied)
+                             if dep not in applied)
             if deps:
                 out += ' (%s)' % deps
             print(out)
