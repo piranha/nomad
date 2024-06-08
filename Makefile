@@ -20,16 +20,16 @@ open:
 
 
 test: .env
-	source .env/bin/activate; \
+	. .env/bin/activate; \
 	python nomad/utils.py; \
 	PYTHONPATH=$(PWD) NOMAD="python $(PWD)/nomad/__init__.py" prysk $(TEST_ARGS) tests/*.t
 
 itest: .env
-	source .env/bin/activate; \
+	. .env/bin/activate; \
 	PYTHONPATH=$(PWD) NOMAD="python $(PWD)/nomad/__init__.py" prysk -i $(TEST_ARGS) tests/*.t
 
 pub: .env
-	source .env/bin/activate; \
+	. .env/bin/activate; \
 	pip install -q build twine; \
 	python -m build; \
 	twine upload dist/nomad-$(VERSION).tar.gz dist/nomad-$(VERSION)-py3-none-any.whl
