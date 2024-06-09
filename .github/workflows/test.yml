@@ -16,5 +16,7 @@ jobs:
         cache-dependency-path: pyproject.toml
     - name: Install dependencies
       run: "pip install .[test]"
+    - name: SQLite version
+      run: sqlite3 --version
     - name: Run tests
       run: "make test"
