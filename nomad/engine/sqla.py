@@ -7,6 +7,11 @@ class SAEngine(BaseEngine):
     def connect(self):
         return create_engine(self.url)
 
+    def set_isolation_level(self, isolation_level):
+        """TODO:
+        http://docs.sqlalchemy.org/en/latest/orm/session_transaction.html#setting-transaction-isolation-levels
+        """
+
     def prepare(self, statement, escape):
         if self.connection.name in ('mysql', 'pgsql', 'postgresql'):
             if escape:

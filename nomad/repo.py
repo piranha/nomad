@@ -131,6 +131,7 @@ class Migration(object):
         self._deps = [x.strip() for x in deps if x.strip()]
 
         self.exists = op.exists(op.join(repo.path, name))
+        self.set_isolation_level()
 
     def __repr__(self):
         return '<%s: %s>' % (type(self).__name__, str(self))
@@ -164,6 +165,12 @@ class Migration(object):
     @property
     def applied(self):
         return self.name in self.repo.appliednames
+
+    def set_isolation_level(self):
+        self.isolation_level = self.conf.get('nomad', 'isolation_level', fallback=None)
+
+    def _apply_isolation_level(self):
+        self.repo.engine.set_isolation_level(self.isolation_level)
 
     def _apply(self, env=None):
         '''The real work for applying a migration
@@ -214,7 +221,11 @@ class Migration(object):
 
         if not fake:
             print('applying migration %s:' % self)
+            # set isolation_level
+            self._apply_isolation_level()
             self._apply(env=env)
+            # reset isolation_level
+            self._apply_isolation_level()
         else:
             print('applying "fake" migration %s' % self)
 
