@@ -2,6 +2,11 @@
  Nomad Changelog
 =================
 
+2.5
+---
+
+- Support for SQLAlchemy 2.0+
+
 2.4
 ---
 
